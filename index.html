@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>診断④ やり直し2日間</title>
+<style>
+:root{
+  --bg:#f4f1ea; --card:#fffdf8; --ink:#1f2a33; --sub:#6b7680; --line:#ddd6c8;
+  --accent:#1f6f78; --ok:#2e8b57; --ng:#c0392b; --warn:#b7791f;
+  --kokugo:#b5473a; --sugaku:#2f6db5; --eigo:#7a4fb0; --shakai:#3d8b4f; --rika:#c47a1c; --mix:#1f6f78; --rest:#8a939b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;-webkit-user-select:none;user-select:none}
+button{font-family:inherit;cursor:pointer;border:none}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+h1{font-size:21px;letter-spacing:.03em}
+.btn{padding:11px 16px;border-radius:10px;font-size:16px;font-weight:700;background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.ng{background:var(--ng);color:#fff;border-color:var(--ng)}
+.btn.sm{padding:7px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.hidden{display:none!important}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;padding:12px;border-radius:12px;background:var(--card);border:2px solid var(--line);font-size:17px;font-weight:700}
+.tab.on{border-color:var(--accent);color:var(--accent)}
+.tab small{display:block;font-size:13px;color:var(--sub);font-weight:400}
+.daybar{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin:4px 0 14px}
+.daybar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.blk{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:7px solid var(--c);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.blk .tm{font-size:13px;color:var(--sub);min-width:84px;line-height:1.4}
+.blk .tm b{display:block;font-size:15px;color:var(--ink)}
+.blk .tt{flex:1;font-size:16px;font-weight:700;line-height:1.45}
+.blk .tt small{display:block;font-size:13px;color:var(--sub);font-weight:400}
+.blk .st{font-size:14px;font-weight:700;min-width:64px;text-align:right}
+.blk.done{opacity:.72}
+.blk.done .st{color:var(--ok)}
+.slothead{font-size:15px;font-weight:800;color:var(--accent);margin:14px 2px 6px}
+.gap{font-size:13px;color:var(--sub);text-align:center;margin:8px 0;padding:6px;border:1px dashed var(--line);border-radius:10px}
+canvas#pad.big{height:560px}
+.note{margin-top:14px;font-size:13px;color:var(--sub);line-height:1.7}
+/* run */
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tag{padding:4px 12px;border-radius:999px;color:#fff;font-weight:700;font-size:14px;background:var(--c);white-space:nowrap}
+.prog{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--c);transition:width .3s}
+.qcount{font-weight:700;font-size:15px;min-width:52px;text-align:right}
+.clock{font-weight:700;font-size:15px;color:var(--sub);min-width:92px;text-align:right}
+.clock.over{color:var(--ng)}
+.card{background:var(--card);border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.ref{display:inline-block;font-size:13px;font-weight:700;color:var(--c);border:2px solid var(--c);border-radius:8px;padding:1px 8px;margin-bottom:8px}
+.qtext{font-size:21px;line-height:1.65;font-weight:600;user-select:text;-webkit-user-select:text}
+.lead{font-size:16px;line-height:1.7}
+.points li{margin:8px 0 8px 1.2em;font-size:17px;line-height:1.65}
+.hintbox{margin-top:10px;padding:10px 12px;background:#fff7e6;border-radius:10px;font-size:16px;line-height:1.6}
+.padwrap{position:relative;background:#fff;border-radius:14px;border:2px solid var(--line);overflow:hidden}
+canvas#pad{display:block;width:100%;height:300px;touch-action:none;background:repeating-linear-gradient(#fff 0 74px,#e9eef2 74px 76px)}
+.padhint{position:absolute;left:14px;top:10px;font-size:13px;color:#a9b2ba;pointer-events:none}
+.tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.tools .sp{flex:1}
+.res{background:var(--card);border-radius:14px;padding:14px 18px;margin-top:10px;border-left:8px solid var(--line)}
+.res.ok{border-left-color:var(--ok)} .res.ng{border-left-color:var(--ng)}
+.res .mark{font-size:28px;font-weight:900;margin-right:8px}
+.res.ok .mark{color:var(--ok)} .res.ng .mark{color:var(--ng)}
+.res .row{font-size:17px;margin-top:6px;line-height:1.65}
+.res .row b{color:var(--sub);font-weight:600;font-size:14px;margin-right:6px}
+.res .fix{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.pts label{display:flex;gap:12px;align-items:flex-start;font-size:18px;line-height:1.6;padding:10px 4px;border-bottom:1px dashed var(--line)}
+.pts input{width:26px;height:26px;margin-top:3px;flex:none}
+.big{font-size:56px;font-weight:900;color:var(--c);text-align:center;margin:8px 0}
+.say{display:flex;gap:10px;align-items:center;margin-top:8px}
+.listenbtn{font-size:22px;padding:14px 22px}
+table.sum{width:100%;border-collapse:collapse;font-size:15px}
+table.sum td,table.sum th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal .card{max-width:520px;width:100%}
+.modal label{display:block;margin:10px 0;font-size:15px}
+.modal input[type=text]{width:100%;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:8px;margin-top:4px}
+@media (max-width:640px){.qtext{font-size:18px}canvas#pad{height:240px}.blk .tm{min-width:70px}}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME ===== -->
+<div id="home" class="wrap">
+  <header>
+    <h1>学習の診断④ やり直し 2日間</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm" onclick="openSummary()">📖 記録</button>
+      <button class="btn sm" onclick="openSettings()">⚙ 設定</button>
+    </div>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <div class="daybar"><i id="dayBar"></i></div>
+  <div id="blockList"></div>
+  <div class="note" id="modeNote"></div>
+</div>
+
+<!-- ===== RUN ===== -->
+<div id="run" class="wrap hidden">
+  <div class="qtop">
+    <button class="btn sm" onclick="quitBlock()">✕</button>
+    <span class="tag" id="rTag"></span>
+    <div class="prog"><i id="rProg"></i></div>
+    <span class="qcount" id="rCount"></span>
+    <span class="clock" id="rClock"></span>
+  </div>
+  <div id="stage"></div>
+  <div id="padArea" class="hidden">
+  <div class="padwrap"><canvas id="pad"></canvas><div class="padhint" id="padHint">ここに答えを書こう</div></div>
+  <div class="tools">
+    <button class="btn" onclick="undo()">↶ 1画もどす</button>
+    <button class="btn" onclick="clearPad()">🗑 全部消す</button>
+    <div class="sp"></div>
+    <button class="btn primary" id="gradeBtn" onclick="onGrade()">答え合わせ</button>
+  </div>
+  </div>
+  <div id="resBox"></div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="card" id="modalBody"></div></div>
+
+<script>
+/* =========================================================
+   学習の診断④ やり直し 2日間セット（11/16 月 4時間・11/17 火 2時間）
+   ・問題用紙の文章はここに入れない（禁複製のため）。①やり直しは「問題用紙の番号」を指示するだけ
+   ・②〜④の問題はすべてオリジナル
+   ・m:"exact" … 正解を見せずに書き起こし→照合（用語・漢字・英単語・記号）
+     m:"ai"    … 正解と基準を渡して意味で判定（式・文・記述）
+   ・解答用紙が届いたら、①の items を差し替える（pending:true は未確認）
+   ========================================================= */
+
+const DAYS = {
+  mon: { label: "11/16（月）", slots: [["17:00","18:00"],["19:30","20:30"],["20:45","21:45"],["22:00","23:00"]] },
+  tue: { label: "11/17（火）", slots: [["20:45","21:45"],["22:00","23:00"]] }
+};
+
+/* 教科の色は kijutsu250 と同じ */
+const SUBJ = { kokugo:"国語", sugaku:"数学", eigo:"英語", shakai:"社会", rika:"理科", mix:"総復習", rest:"休けい" };
+
+const BLOCKS = [
+{ id:"m1", day:"mon", slot:0, subj:"sugaku", type:"redo", min:35, title:"① 数学のやり直し（計算・小問）",
+  lead:"問題用紙の数学を出して、指示された問題をもう一度解こう。途中式は問題用紙に書いてOK。画面には答えだけ書く。",
+  items:[
+  { id:"m1-1", ref:"数学 問題1(4)", q:"問題用紙の<b>問題1(4)</b>を因数分解しよう。", a:["(a+b+3)(a+b+5)"], m:"ai",
+    rule:"(a+b+3)(a+b+5) と同じ式なら正解。かっこの順番が逆でも正解。展開した式は不正解。",
+    hint:"a+b をまとめて A と置くと、A²+8A+15 になる。", exp:"a+b=A と置く → A²+8A+15=(A+3)(A+5) → Aを戻して (a+b+3)(a+b+5)。<br>※(a+b)² を a²+b² と展開するのは×。(a+b)²=a²+2ab+b²。" },
+  { id:"m1-2", ref:"数学 問題1(5)", q:"問題用紙の<b>問題1(5)</b>を計算しよう。", a:["√3−1"], m:"ai",
+    rule:"√3−1 なら正解。-1+√3 も正解。",
+    hint:"1/√2 を (√6−√2) の両方にかける。√6÷√2 はいくつ？", exp:"√6/√2 − √2/√2 = √3 − 1。<br>「÷√2」なのに「×√2」して √12 にしないこと。" },
+  { id:"m1-3", ref:"数学 問題1(6)", q:"問題用紙の<b>問題1(6)</b>の2次方程式を解こう。", a:["x=1,-2"], m:"ai",
+    rule:"x=1 と x=-2 の両方が書かれていれば正解。片方だけは不正解。",
+    hint:"いきなり解の公式を使わない。まず両辺を2で割ると？", exp:"両辺÷2 → x²+x−2=0 → (x+2)(x−1)=0 → x=1, −2。<br>解の公式を使うなら b²−4ac=2²−4×2×(−4)=4+32=36。c がマイナスなので −4ac はプラスになる。" },
+  { id:"m1-4", ref:"数学 問題2(3)", q:"問題用紙の<b>問題2(3)</b>：a は b の何倍？", a:["4/9倍"], m:"ai",
+    rule:"4/9（9分の4）なら正解。「倍」がなくても正解。",
+    hint:"比例式は「外側どうしの積＝内側どうしの積」。", exp:"a:4=b:9 → 9a=4b → a=4/9 b。だから 4/9 倍。" },
+  { id:"m1-5", ref:"数学 問題2(4)", q:"問題用紙の<b>問題2(4)</b>の □ に入る式を書こう。", a:["-0.05x+0.06y"], m:"ai",
+    rule:"−0.05x+0.06y と同じ式なら正解（−5/100x+6/100y、0.06y−0.05x も正解）。",
+    hint:"「大人が5%減った」は人数の変化で −0.05x。子どもは？", exp:"変化した人数どうしの式にする。大人 −0.05x、子ども +0.06y、合計の変化が +150。<br>5%＝0.05（0.5や1/5ではない）。" },
+  { id:"m1-6", ref:"数学 問題2(5)", q:"問題用紙の<b>問題2(5)</b>の n を求めよう。", a:["27"], m:"exact", hint:"数字",
+    exp:"5<√n<6 → 25<n<36。√(3n) が整数 → 3n が平方数（81など）。3n=81 → n=27。" },
+  { id:"m1-7", ref:"数学 問題3(2)", q:"問題用紙の<b>問題3(2)</b>：∠ABC は何度？", a:["80"], m:"exact", hint:"数字",
+    exp:"AD∥BC なので錯角で ∠BCE=∠CED=50°。CE は二等分線なので ∠BCD=100°。平行四辺形のとなり合う角の和は180° → ∠ABC=80°。<br>※図の角を見た目で「90°」と決めつけない。" },
+  { id:"m1-8", ref:"数学 問題3(3)①", q:"問題用紙の<b>問題3(3)①</b>：DE の長さは？", a:["3cm"], m:"ai", rule:"3（cm）なら正解。",
+    hint:"AD:AB = DE:BC。AB は 6+12。", exp:"△ADE∽△ABC で AD:AB=6:18=1:3。DE=9×1/3=3cm。<br>比を書くときは「小さい三角形：大きい三角形」の順をそろえる。" },
+  { id:"m1-9", ref:"数学 問題4(1)", q:"問題用紙の<b>問題4(1)</b>：4番目の黒い碁石は<b>全部で</b>何個？", a:["16"], m:"exact", hint:"数字",
+    exp:"黒は 1,3,5,7 個ずつ増える。全部で 1+3+5+7=16個。<br>「全部で」を読み落として、増えた7個だけ答えないこと。" },
+  { id:"m1-10", ref:"数学 問題4(2)", q:"問題用紙の<b>問題4(2)</b>：n番目の合計を n の式で。", a:["2n²+n"], m:"ai", rule:"2n²+n と同じ式なら正解（n(2n+1) も正解）。",
+    hint:"1番目3個、2番目10個、3番目21個…表にして「n²の何倍か」を考える。", exp:"1番目3, 2番目10, 3番目21, 4番目36 → 2n²+n（n=1で3、n=2で10）。<br>式ができたら n=1,2 を入れて確かめる。" },
+  { id:"m1-11", ref:"数学 問題1(2)", q:"問題用紙の<b>問題1(2)</b>を計算しよう。", a:["-1/4"], m:"ai", rule:"−1/4 なら正解。",
+    hint:"たし算より、わり算が先。", exp:"3/4÷(−3/2)=3/4×(−2/3)=−1/2 を先に計算 → 1/4−1/2=−1/4。<br>左から順に 1/4+3/4=1 としてはいけない。" },
+  { id:"m1-11b", ref:"数学 問題3(3)②", q:"問題用紙の<b>問題3(3)②</b>の体積（答えだけ）", a:["234√3π"], m:"ai", rule:"234√3π（cm³）なら正解。",
+    hint:"大きい円すい（半径9・高さAC）から、小さい円すい（半径3・高さAE）を引く。AC は 9√3。", exp:"AE:AC=6:18 → AE=3√3、AC=9√3。1/3×π×81×9√3 − 1/3×π×9×3√3 = 243√3π − 9√3π = 234√3π。<br>高さに 9 を使うと 108π になってしまう（テストの答え）。" },
+  { id:"m1-12", ref:"数学 問題5(3)②", q:"問題用紙の<b>問題5(3)②</b>の a の値（答えだけでOK）", a:["4"], m:"exact", hint:"数字",
+    exp:"AB=2a、AC=(1/2)a²。2a=(1/2)a² → a²=4a → a=4（a>0）。" }
+  ]},
+
+{ id:"m2", day:"mon", slot:0, subj:"sugaku", type:"review", min:25, title:"② 数学の復習（計算のきまり）",
+  points:[
+    "<b>√の割り算</b>：√a÷√b=√(a/b)。1/√2 をかける＝√2 で割る。",
+    "<b>(a+b)² は a²+2ab+b²</b>。a²+b² ではない。",
+    "<b>同じかたまりが2回出たら置きかえ</b>：(a+b)²+8(a+b)+15 → A²+8A+15。",
+    "<b>2次方程式はまず全体を割れないか見る</b> → 因数分解 → だめなら解の公式。",
+    "<b>比例式</b> a:b=c:d → ad=bc。<b>%</b> 5%＝0.05、増えたら＋、減ったら−。",
+    "<b>√n が整数</b> → n が平方数（1,4,9,16,25,36,49,64,81,100…）。"
+  ],
+  items:[
+  { id:"m2-1", q:"(√18 + √8) ÷ √2 を計算しよう。", a:["5"], m:"ai", rule:"5なら正解。", exp:"√18÷√2=√9=3、√8÷√2=√4=2 → 5。" },
+  { id:"m2-2", q:"1/√3 (√15 − √3) を計算しよう。", a:["√5−1"], m:"ai", rule:"√5−1 なら正解。", exp:"√15÷√3=√5、√3÷√3=1 → √5−1。" },
+  { id:"m2-3", q:"(x+y)² − 3(x+y) − 10 を因数分解しよう。", a:["(x+y−5)(x+y+2)"], m:"ai", rule:"(x+y−5)(x+y+2) と同じなら正解。順番は問わない。", exp:"x+y=A → A²−3A−10=(A−5)(A+2)。" },
+  { id:"m2-4", q:"3x² − 6x − 9 = 0 を解こう。", a:["x=3,-1"], m:"ai", rule:"x=3 と x=−1 の両方で正解。", exp:"÷3 → x²−2x−3=0 → (x−3)(x+1)=0 → x=3, −1。" },
+  { id:"m2-5", q:"a:5 = b:3 のとき、a は b の何倍？", a:["5/3倍"], m:"ai", rule:"5/3 なら正解。", exp:"3a=5b → a=5/3 b。" },
+  { id:"m2-6", q:"√(45n) が自然数になる、いちばん小さい自然数 n は？", a:["5"], m:"exact", hint:"数字", exp:"45=3²×5。5をかければ 3²×5²=15²。n=5。" }
+  ]},
+
+{ id:"m4", day:"mon", slot:1, subj:"sugaku", type:"drill", min:40, title:"④ 数学の補強（図形・関数・規則性）",
+  lead:"テストでまちがえた問題と同じ考え方の、ちがう問題。図は問題用紙の余白に自分でかいてから解こう。",
+  items:[
+  { id:"m4-1", q:"平行四辺形ABCDで、∠BCD の二等分線と辺AD の交点をEとする。∠CED=35°のとき、∠ABC は何度？", a:["110"], m:"exact", hint:"数字",
+    exp:"錯角で ∠BCE=35° → ∠BCD=70° → ∠ABC=180−70=110°。" },
+  { id:"m4-2", q:"△ABC の辺AB上に点D、辺AC上に点Eがあり DE∥BC。AD=4cm、DB=8cm、BC=15cm のとき DE は？", a:["5cm"], m:"ai", rule:"5（cm）なら正解。",
+    exp:"AD:AB=4:12=1:3 → DE=15×1/3=5cm。AB=AD+DB を忘れない。" },
+  { id:"m4-3", q:"底面の半径6cm、高さ9cmの円すいを、頂点から3cmの高さのところで底面に平行に切った。下側（円すい台）の体積は？（円周率はπ）", a:["104π"], m:"ai", rule:"104π（cm³）なら正解。",
+    exp:"小さい円すいは半径2・高さ3。1/3×π×36×9 − 1/3×π×4×3 = 108π − 4π = 104π cm³。" },
+  { id:"m4-4", q:"黒い碁石を 1個、3個、5個、7個…と順に並べて足していく。5番目までで黒い碁石は全部で何個？", a:["25"], m:"exact", hint:"数字",
+    exp:"1+3+5+7+9=25。奇数を順に足すと n²（5番目→25）。" },
+  { id:"m4-5", q:"マッチ棒で正方形を横に1個、2個、3個…とつなげる。正方形をn個つなげたときのマッチ棒の本数を n の式で。", a:["3n+1"], m:"ai", rule:"3n+1 と同じなら正解。",
+    exp:"1個で4本、2個で7本、3個で10本 → 3本ずつ増える → 3n+1。n=1で4を確認。" },
+  { id:"m4-6", q:"関数 y=½x² のグラフ上に点A（x座標2）がある。Aを通りx軸に平行な直線とグラフのもう一つの交点Bの座標は？", a:["(-2,2)"], m:"ai", rule:"(−2, 2) なら正解。",
+    exp:"A(2, 2)。y軸で対称なので B(−2, 2)。" },
+  { id:"m4-7", q:"y=x² 上の点A(a, a²)（a>0）、B(−a, a²)、C(a, 0)。AB と AC の長さが等しいときの a は？", a:["2"], m:"exact", hint:"数字",
+    exp:"AB=2a、AC=a²。2a=a² → a=2。" },
+  { id:"m4-8", q:"「連続する3つの整数の和は3の倍数」。まん中を n とすると、3つの和は n を使ってどう表せる？", a:["3n"], m:"ai", rule:"3n なら正解（(n−1)+n+(n+1)=3n の途中式つきも正解）。",
+    exp:"(n−1)+n+(n+1)=3n。3×(整数) なので3の倍数。" },
+  { id:"m4-9", q:"「連続する2つの偶数の積に1をたすと、奇数の2乗になる」。小さいほうを 2n とすると、2n(2n+2)+1 は何の2乗？", a:["(2n+1)²"], m:"ai", rule:"(2n+1)² または 2n+1 と書けていれば正解。",
+    exp:"2n(2n+2)+1=4n²+4n+1=(2n+1)²。2n+1 は奇数。" },
+  { id:"m4-10", q:"先月の入館者は男子x人・女子y人で合計500人。今月は男子が10%増え、女子が4%減って、全体で6人増えた。「増えた人数」の式をつくろう（□=6 の□）。", a:["0.1x-0.04y"], m:"ai", rule:"0.1x−0.04y と同じ式なら正解。",
+    exp:"男子 +0.1x、女子 −0.04y → 0.1x−0.04y=6。" },
+  { id:"m4-11", q:"4<√n<5 をみたす自然数 n のうち、√(2n) が整数になる n は？", a:["18"], m:"exact", hint:"数字",
+    exp:"16<n<25 → 32<2n<50 → 2n=36 → n=18。" },
+  { id:"m4-12", q:"x² + 4x + 1 = 0 を解こう（解の公式）。", a:["x=-2±√3"], m:"ai", rule:"x=−2±√3 なら正解。(−4±√12)/2 のまま約分していないものは不正解。",
+    exp:"x=(−4±√(16−4))/2=(−4±2√3)/2=−2±√3。" }
+  ]},
+
+{ id:"m5", day:"mon", slot:1, subj:"sugaku", type:"explain", min:20, title:"③ 説明タイム（数学）",
+  lead:"お父さん（お母さん）に解き方を説明しよう。聞く人は、言えたポイントにチェック。全部言えたら「説明できた」。",
+  items:[
+  { id:"m5-1", ref:"数学 問題1(6)", q:"2次方程式 2x²+2x−4=0 の解き方", pts:["まず両辺を2で割る","x²+x−2=0 を因数分解する","(x+2)(x−1)=0 → x=1, −2"] },
+  { id:"m5-2", ref:"数学 問題3(2)", q:"平行四辺形の ∠ABC の求め方", pts:["AD∥BC なので錯角が等しい（50°）","二等分線なので ∠BCD は2倍の100°","となり合う角の和は180° → 80°"] },
+  { id:"m5-3", ref:"数学 問題3(3)①", q:"DE の長さの求め方", pts:["△ADE∽△ABC（DE∥BC）","AD:AB=6:18=1:3 と、対応する辺どうしで比をつくる","DE=9×1/3=3cm"] },
+  { id:"m5-4", ref:"数学 問題6", q:"連続する2つの奇数の積に1をたすと4の倍数になる証明", pts:["n を整数として、2つの奇数を 2n−1、2n+1 と置く","(2n−1)(2n+1)+1=4n²−1+1=4n²","n² は整数なので 4n² は4の倍数（結論を書く）"] },
+  { id:"m5-5", ref:"数学 問題7(1)", q:"△ABC∽△EDC の証明の書き方（テストは1点減点）", pts:["△ABCと△EDCで","角は3文字で書く：∠BAC=∠DEC=90°（∠A とだけ書かない）","共通な角だから ∠ACB=∠ECD","2組の角がそれぞれ等しいので △ABC∽△EDC"] }
+  ]},
+
+{ id:"m7", day:"mon", slot:2, subj:"rika", type:"redo", min:35, title:"① 理科のやり直し＋用語は漢字で",
+  lead:"理科は「わかっているのにひらがな」が多かった。用語は漢字で書けるようにしよう。",
+  items:[
+  { id:"m7-1", ref:"理科 問題1(2)", q:"目で光の刺激を受けとり、信号に変えるところの名前（漢字）。テストでは「レンズ」と書いた。", a:["網膜"], m:"exact", hint:"漢字", exp:"網膜（もうまく）。図のウ。レンズは光を曲げるだけ。<br>耳（うずまき管・カ）は合っていたが、記号と名称の完答なので1点にならなかった。" },
+  { id:"m7-2", ref:"理科 問題4(1)", q:"雲ができるとき、空気のかたまりはどう動く？（漢字2字＋する）", a:["上昇する"], m:"exact", hint:"漢字とひらがな", exp:"上昇する → 上空は気圧が低いので膨張 → 温度が下がる → 露点で水滴に。" },
+  { id:"m7-3", ref:"理科 問題1(3)", q:"感覚器官から中枢神経に信号を伝える神経（漢字）", a:["感覚神経"], m:"exact", hint:"漢字", exp:"感覚神経。脳や脊髄から筋肉へ伝えるのは運動神経。" },
+  { id:"m7-4", ref:"理科 問題1(4)", q:"問題用紙の<b>問題1(4)</b>：(3)の神経は A〜H のどれ？", a:["B"], m:"exact", hint:"アルファベット1文字", exp:"B。A は「手の皮膚」＝感覚器官そのもの。神経は線（B）。" },
+  { id:"m7-5", ref:"理科 問題1(6)", q:"反射が意識して起こす反応より速い理由（「意識して起こす反応と比べて、」に続けて）", a:["刺激を受けてから反応するまでの経路が短いから"], m:"ai", rule:"「経路（道すじ）が短い」または「脳を通らず脊髄から命令が出る」内容なら正解。「脳に伝わる前に反応する」だけで経路・脊髄にふれていなければ不正解。", exp:"刺激→感覚神経→<b>脊髄</b>→運動神経→筋肉。脳を通らないので経路が短く速い。テストの「脳に伝わる前に反応する」は、脊髄・経路の説明がなく×。" },
+  { id:"m7-6", ref:"理科 問題5(1)", q:"水にとけにくい気体を、水と入れかえて集める方法（漢字）", a:["水上置換法"], m:"exact", hint:"漢字", exp:"水上置換法。テストでは上方置換法と書いた。上方置換法は水にとけやすく空気より軽い気体（アンモニア）。" },
+  { id:"m7-7", ref:"理科 問題2(4)", q:"根の先などで起こる、染色体の数が変わらない細胞分裂の名前（漢字）", a:["体細胞分裂"], m:"exact", hint:"漢字", exp:"体細胞分裂。生殖細胞をつくるときが減数分裂（染色体が半分）。" },
+  { id:"m7-8", ref:"理科 問題2(3)", q:"問題用紙の<b>問題2(3)</b>：ア〜オを分裂の順に（アから）", a:["アオウエイ"], m:"exact", hint:"カタカナの記号", exp:"ア→オ（染色体が見える）→ウ（中央に並ぶ）→エ（両端へ分かれる）→イ（2つの核）。" },
+  { id:"m7-9", ref:"理科 問題3(1)", q:"火山灰などが押し固められてできた岩石（漢字）", a:["凝灰岩"], m:"exact", hint:"漢字", exp:"凝灰岩（ぎょうかいがん）。" },
+  { id:"m7-10", ref:"理科 問題3(2)", q:"れき・砂・泥を水に入れると、いちばん下にたまるのは？", a:["れき"], m:"exact", hint:"ひらがな", exp:"れき。粒が大きく重いものから先に沈む。" },
+  { id:"m7-11", ref:"理科 問題3(4)(5)(6)", q:"塩酸をかけると気体が出る堆積岩の名前（漢字）", a:["石灰岩"], m:"exact", hint:"漢字", exp:"石灰岩。かたくて塩酸に反応しないのはチャート（沖合の深い海底）。フズリナ＝古生代。" },
+  { id:"m7-12", ref:"理科 問題4(4)(6)", q:"空気中の水蒸気が水滴に変わり始める温度（漢字）", a:["露点"], m:"exact", hint:"漢字", exp:"露点。線状降水帯をつくる雲は積乱雲。" },
+  { id:"m7-13", ref:"理科 問題5(5)", q:"丸底フラスコの水がスポイトの水を吸い上げる（噴水実験）。フラスコ内の何が小さくなった？（漢字2字）", a:["気圧"], m:"exact", hint:"漢字", exp:"気圧。アンモニアが水にとけてフラスコ内の気圧が下がる。テストは「温度」と書いた。" },
+  { id:"m7-14", ref:"理科 問題6(6)", q:"硝酸銀水溶液に銅線 → 出てきた固体を化学式で", a:["Ag"], m:"exact", hint:"アルファベット", exp:"Ag（銀）。銅のほうがイオンになりやすいので、銅がとけて銀が出る。" },
+  { id:"m7-15", ref:"理科 問題8(1)", q:"問題用紙の<b>問題8(1)</b>：X間の平均の速さ（数字だけ）", a:["91"], m:"exact", hint:"数字", exp:"6打点＝0.1秒（ここまでは合っていた！）。9.1cm÷<b>0.1秒</b>=91cm/s。÷6 ではない。" }
+  ]},
+
+{ id:"m8", day:"mon", slot:2, subj:"rika", type:"drill", min:25, title:"④ 理科の補強（地層・化学・電流・運動）",
+  points:[
+    "<b>地層</b>：重い粒（れき）から沈む／下の層ほど古い／下から 泥→砂→れき は「海が浅くなった」。",
+    "<b>電離式</b>：CuSO₄ → Cu²⁺ + SO₄²⁻（+と−の数をそろえる）。",
+    "<b>イオンへのなりやすさ</b>：Mg ＞ Zn ＞ Cu ＞ Ag。なりやすい金属がとけ、なりにくい金属が出てくる。",
+    "<b>電流が磁界から受ける力</b>＝モーター・スピーカー。<b>電磁誘導</b>＝発電機・マイク。",
+    "<b>記録タイマー</b>（1秒60打点）：6打点＝0.1秒。速さ＝距離÷0.1。"
+  ],
+  items:[
+  { id:"m8-1", q:"ある地層を下から見ると 泥岩 → 砂岩 → れき岩 だった。この地点の海の深さはどう変わった？", a:["しだいに浅くなった"], m:"ai", rule:"「浅くなった」の内容なら正解。", exp:"れきは岸の近く（浅い所）、泥は沖（深い所）にたまる。下から泥→れき ＝ 浅くなった。" },
+  { id:"m8-2", q:"地層の逆転がないとき、いちばん古い層は上と下のどちら？", a:["下"], m:"exact", hint:"漢字1字", exp:"下。上に重なるほど新しい。" },
+  { id:"m8-3", q:"アンモナイトの化石をふくむ地層ができた地質年代は？", a:["中生代"], m:"exact", hint:"漢字", exp:"中生代（恐竜・アンモナイト）。フズリナ・サンヨウチュウ＝古生代、ビカリア＝新生代。" },
+  { id:"m8-4", q:"塩化銅 CuCl₂ が水にとけて電離するようすを式で書こう。", a:["CuCl2→Cu2++2Cl-"], m:"ai", rule:"CuCl₂ → Cu²⁺ + 2Cl⁻ と同じなら正解。2Cl⁻ の係数2がないもの、電荷がないものは不正解。", exp:"CuCl₂ → Cu²⁺ + 2Cl⁻。+2 と −1×2 でつり合う。" },
+  { id:"m8-5", q:"硫酸亜鉛水溶液にマグネシウム片を入れると、表面に何が付く？（物質名）", a:["亜鉛"], m:"exact", hint:"漢字", exp:"亜鉛。Mg のほうがイオンになりやすい → Mg がとけ、Zn²⁺ が電子を受けとって亜鉛になる。" },
+  { id:"m8-6", q:"銅イオン Cu²⁺ が亜鉛から電子を「受けとる」か「うばわれる」か。", a:["受けとる"], m:"ai", rule:"「受けとる（受け取る）」なら正解。", exp:"陽イオンが電子を2個受けとって銅原子になる。" },
+  { id:"m8-7", q:"電流が磁界から受ける力を利用したものを2つ（発電機・モーター・マイク・スピーカーから）", a:["モーター、スピーカー"], m:"ai", rule:"モーターとスピーカーの2つなら正解。発電機・マイクがまじれば不正解。", exp:"発電機とマイクは電磁誘導（コイルを動かして電流をつくる）。" },
+  { id:"m8-8", q:"コイルにはたらく力を大きくするには、電流をどうする？", a:["大きくする"], m:"ai", rule:"電流を大きくする（電圧を上げる・抵抗を小さくする）内容なら正解。", exp:"電流を大きくする。磁石を強くしてもよい。" },
+  { id:"m8-9", q:"1秒間に60打点の記録タイマー。6打点で4.2cm進んだ。この間の平均の速さは何cm/s？", a:["42"], m:"exact", hint:"数字", exp:"6打点＝0.1秒。4.2÷0.1=42cm/s。" },
+  { id:"m8-10", q:"水平面上で、一定の速さで一直線上を進む運動の名前（漢字）", a:["等速直線運動"], m:"exact", hint:"漢字", exp:"等速直線運動。斜面では、斜面に平行な分力が一定の大きさではたらき続けるので速さが増える。" },
+  { id:"m8-11", ref:"理科 問題4(5)", q:"くもったフラスコでピストンを押すと、くもりが消える理由", a:["気圧が上がって温度が上がり、水滴が水蒸気に変わるから"], m:"ai", rule:"「温度が上がる」と「水滴が水蒸気に変わる（もどる）」の両方があれば正解。", exp:"押す→圧縮→気圧が上がる→温度が上がる→飽和水蒸気量が大きくなり、水滴が水蒸気にもどる。" },
+  { id:"m8-12b", ref:"理科 問題6(1)", q:"マイクロプレート（小さな穴の板）で実験するよい点", a:["使う薬品や廃液の量を少なくでき、環境への影響を小さくできる"], m:"ai", rule:"「薬品（廃液）の量が少なくてすむ」内容があれば正解。", exp:"マイクロスケール実験＝少量の薬品で安全・環境にやさしい。" },
+  { id:"m8-12c", ref:"理科 問題5(4)", q:"酸素が発生するのはどれ？ ア 炭酸水素ナトリウムを加熱 イ 酸化銀を加熱 ウ 塩化アンモニウムと水酸化カルシウムを加熱", a:["イ"], m:"exact", hint:"カタカナの記号", exp:"酸化銀→銀＋酸素。アは二酸化炭素、ウはアンモニア。" },
+  { id:"m8-12d", ref:"理科 問題7(6)", q:"電磁誘導を利用したものを2つ（発電機・モーター・マイク・電熱線から）", a:["発電機、マイク"], m:"ai", rule:"発電機とマイクの2つなら正解。", exp:"テストでは ア・イ（モーター系）を選んだ。発電機・マイク＝電磁誘導。" },
+  { id:"m8-12", q:"受精卵が細胞分裂をくり返すと、細胞1つ1つの大きさはどうなる？", a:["小さくなる"], m:"ai", rule:"「小さくなる」なら正解。", exp:"受精卵の大きさのまま分かれていくので、1つ1つは小さくなる。胚は、自分で食物をとり始める前まで（オタマジャクシは胚ではない）。" }
+  ]},
+
+{ id:"m10", day:"mon", slot:3, subj:"eigo", type:"drill", min:30, title:"②④ 英語の文法（後ろから説明・間接疑問）",
+  points:[
+    "<b>名詞を後ろから説明する</b>：the boy <u>with</u> blue eyes／the computer <u>bought</u> by my sister（過去分詞）／the boy <u>running</u> over there（-ing＋語句）／a dog <u>named</u> Shiro。",
+    "「〜された」は過去分詞1語。<b>was bought はつけない</b>（文の動詞になってしまう）。",
+    "<b>間接疑問</b>：Do you know＋<u>疑問詞＋主語＋動詞</u>？ → Do you know what sport Seiya plays?（does は消える）",
+    "<b>経験の否定</b>：I have <u>never been</u> there.",
+    "<b>発音</b>はつづりではなく音で：know[ou]／now[au]。that と this の th は同じ音。"
+  ],
+  items:[
+  { id:"m10-1", q:"( )に1語：Look at the girl ( ) long hair.", a:["with"], m:"exact", hint:"英単語", exp:"with long hair＝長い髪をした。" },
+  { id:"m10-2", q:"( )に1語（write を適切な形に）：This is a letter ( ) by my grandmother.", a:["written"], m:"exact", hint:"英単語", exp:"written＝書かれた（過去分詞）。" },
+  { id:"m10-3", q:"( )に1語（take を適切な形に）：These are pictures ( ) in Kyoto.", a:["taken"], m:"exact", hint:"英単語", exp:"taken＝撮られた。" },
+  { id:"m10-4", q:"並べかえて全文を書こう：( the / over / girl / there / dancing ) is my sister.", a:["The girl dancing over there is my sister."], m:"ai", rule:"The girl dancing over there is my sister. と同じ語順なら正解。文頭の大文字・ピリオドは問わない。", exp:"girl を dancing over there が後ろから説明。" },
+  { id:"m10-5", q:"並べかえて全文を書こう：( you / where / know / do / lives / Ken )?", a:["Do you know where Ken lives?"], m:"ai", rule:"Do you know where Ken lives? と同じ語順なら正解。", exp:"where＋Ken＋lives（主語＋動詞）の順。does は使わない。" },
+  { id:"m10-6", q:"並べかえて全文を書こう：( what / she / I / bought / know / don't ).", a:["I don't know what she bought."], m:"ai", rule:"I don't know what she bought. と同じ語順なら正解。", exp:"what＋she＋bought。" },
+  { id:"m10-7", q:"並べかえて全文を書こう：( remember / you / do / said / what / Mika )?", a:["Do you remember what Mika said?"], m:"ai", rule:"Do you remember what Mika said? と同じ語順なら正解。", exp:"Do you remember の後ろに what＋Mika＋said。" },
+  { id:"m10-8", q:"英語にしよう：わたしは一度も北海道に行ったことがない。", a:["I have never been to Hokkaido."], m:"ai", rule:"I have never been to Hokkaido. と同じ意味・文法なら正解（I've も可）。gone は不正解。", exp:"have never been to 〜。" },
+  { id:"m10-9", q:"同じ発音でつづりがちがう語：「買う」と「〜のそばに」", a:["buy, by"], m:"ai", rule:"buy と by の両方が正しいつづりなら正解。", exp:"buy / by。ほかに know/no、right/write、meet/meat、see/sea。" },
+  { id:"m10-10", q:"同じ発音でつづりがちがう語：「聞く」と「ここに」", a:["hear, here"], m:"ai", rule:"hear と here の両方が正しいつづりなら正解。", exp:"hear / here。" },
+  { id:"m10-11", q:"( )に1語：Are you interested ( ) Japanese culture?", a:["in"], m:"exact", hint:"英単語", exp:"be interested in 〜＝〜に興味がある。" },
+  { id:"m10-13", ref:"英語 問題4(1)", q:"( )に2語：「あの男の人はだれか知っている？」 Do you know ( ) ( ) that man?", a:["who is"], m:"ai", rule:"who is なら正解。", exp:"疑問詞 who が主語の位置。Do you know who that man is? の形もあるが、ここは who is。" },
+  { id:"m10-14", ref:"英語 問題4(3)", q:"( )に2語：「何時に起きればいいかわからない」 I don't know ( ) ( ) to get up.", a:["what time"], m:"ai", rule:"what time なら正解。", exp:"what time to 〜＝何時に〜すればよいか。" },
+  { id:"m10-15", ref:"英語 問題7", q:"英作文（3文以上）：What do you like to do on weekends?", a:["自由英作文"], m:"ai", rule:"英語3文以上、質問に答えていて、全体で15語以上なら正解。文法ミスが3つ以上あれば不正解。", exp:"型：I like to 〜. / I 〜 with 人. / It makes me happy.（理由・具体例を1文ずつ）。白紙は0点、3文書けば点になる。" },
+  { id:"m10-16", ref:"英語 問題8(5)", q:"The season starts in September and ends in February. 何か月間？（英語の数字1語）", a:["six"], m:"exact", hint:"英単語", exp:"9,10,11,12,1,2 → six。本文の数字をそのまま書かず、数える。" },
+  { id:"m10-12", q:"( )に2語：I'm ( ) ( ) my key. Have you seen it?（さがしている）", a:["looking for"], m:"ai", rule:"looking for なら正解。", exp:"look for 〜＝〜をさがす。" }
+  ]},
+
+{ id:"m11", day:"mon", slot:3, subj:"rika", type:"explain", min:20, title:"③ 説明タイム（理科・英語）",
+  lead:"今日の最後。ポイントを自分のことばで言えたらOK。",
+  items:[
+  { id:"m11-1", ref:"理科 問題3", q:"地層の重なり方と、海の深さの変化", pts:["粒の大きい（重い）れきから先に沈む","下の層ほど古い","下から泥→砂→れきなら海が浅くなった"] },
+  { id:"m11-2", ref:"理科 問題2", q:"体細胞分裂の順番", pts:["核の中に染色体が見えてくる","染色体が中央に並ぶ","両端に分かれ、2つの核ができて細胞が2つになる"] },
+  { id:"m11-3", ref:"理科 問題8", q:"記録テープから速さを出す方法", pts:["1秒60打点なので6打点は0.1秒","速さ＝距離÷時間","9.1cm÷0.1秒=91cm/s"] },
+  { id:"m11-5", ref:"理科 問題6", q:"硝酸銀水溶液に銅を入れると銀が出てくるわけ", pts:["銅は銀よりイオンになりやすい","銅が電子を出して銅イオンになり、とける","銀イオンが電子を受けとって銀になり、出てくる"] },
+  { id:"m11-6", ref:"英語 問題5(2)", q:"Look at that boy running over there. の語順", pts:["running だけなら名詞の前（a running boy）","running over there のように語句がつくと名詞の後ろ","boy を後ろから running over there が説明している"] },
+  { id:"m11-4", ref:"英語 問題5", q:"Do you know what sport Seiya plays? の語順のルール", pts:["Do you know で始める","後ろは 疑問詞＋主語＋動詞","does は使わず plays の s が残る"] }
+  ]},
+
+{ id:"m12", day:"mon", slot:3, subj:"mix", type:"mix", min:10, title:"月曜のまとめ（まちがえた問題を再挑戦）", lead:"今日まちがえた問題からもう一度。全部〇になったら終わり。" },
+
+{ id:"t1", day:"tue", slot:0, subj:"shakai", type:"drill", min:35, title:"①②④ 社会（公民の用語と記述）",
+  points:[
+    "<b>人権</b>：自由権（表現・身体・経済の自由）／社会権（生存権・教育を受ける権利・勤労の権利）／参政権。",
+    "<b>憲法改正</b>：各議院の総議員の3分の2以上で発議 → 国民投票で<b>過半数</b>の賛成。",
+    "<b>選挙の4原則</b>：普通・平等・秘密・直接。きまりは<b>公職選挙法</b>。一票の価値の差＝<b>一票の格差</b>。",
+    "<b>国会</b>：常会（毎年1月）／臨時会（内閣か、どちらかの議院の総議員の4分の1以上の要求）／特別会（衆議院の総選挙から30日以内）／参議院の緊急集会。",
+    "<b>記述のコツ</b>：指定語句は必ず使う。「〜から。」で終わる。"
+  ],
+  items:[
+  { id:"t1-1", ref:"社会 問題2(2)", q:"選挙区・議員定数など、選挙のしくみを定めた法律（漢字）", a:["公職選挙法"], m:"exact", hint:"漢字", exp:"公職選挙法。テストは「普通選挙法」を選んだ（そんな法律の名前はない）。" },
+  { id:"t1-2", ref:"社会 問題1(2)", q:"「教育を受ける権利」は自由権・社会権・参政権のどれ？", a:["社会権"], m:"exact", hint:"漢字", exp:"社会権（人間らしい生活の保障）。表現の自由・逮捕に令状が必要＝自由権。" },
+  { id:"t1-3", ref:"社会 問題1(4)a", q:"国民の義務が3つしかないのはなぜ？「国民」という言葉を使って", a:["憲法は国の権力を制限して、国民の権利を守るためのものだから"], m:"ai", rule:"「憲法は国（政府・権力）をしばる／国民の権利（人権）を守るためのもの」という内容があり、「国民」を使っていれば正解。", exp:"憲法は国民が国に守らせるきまり（立憲主義）。だから国民の義務は最小限。三大義務＝子どもに教育を受けさせる・勤労・納税。" },
+  { id:"t1-4", ref:"社会 問題1(4)b", q:"国民投票で有効投票総数が8000万票。改正案の承認に必要な最低の賛成票は？", a:["4000万1票"], m:"ai", rule:"4000万1票（40000001票）なら正解。4000万票ちょうどは不正解。", exp:"過半数＝半分より多い → 4000万＋1票。テストは「＋1」を落とした。半分ちょうどは過半数ではない。" },
+  { id:"t1-5", ref:"社会 問題3(4)a", q:"禁中並公家諸法度を定めて朝廷を統制したのは、江戸時代の初め・中ごろ・終わりのどれ？", a:["初め"], m:"ai", rule:"「初め（初期・17世紀初め・家康や秀忠のころ）」なら正解。", exp:"1615年、江戸時代の初め。吉宗（享保の改革）は1716年〜なので、ウが誤り。" },
+  { id:"t1-6", ref:"社会 問題6(2)", q:"オーストラリア大陸の中ほど、南緯約23度を通る緯線の名前（漢字）", a:["南回帰線"], m:"exact", hint:"漢字", exp:"南回帰線。赤道はオーストラリアよりずっと北。人口10万以上の都市は沿岸部・南回帰線より南に多い。" },
+  { id:"t1-7", ref:"社会 問題5(2)", q:"農耕・文字・金属器・火薬のうち、古代文明に共通する特徴ではないものは？", a:["火薬"], m:"exact", hint:"漢字", exp:"火薬は3〜7世紀の中国で発明。古代文明より後。" },
+  { id:"t1-8", ref:"社会 問題4(4)", q:"コロンブスの西インド諸島到達（1492年）に近い時代の日本の出来事は？ 遣唐使の派遣／琉球王国の成立／ペリーの来航", a:["琉球王国の成立"], m:"ai", rule:"琉球王国の成立なら正解。", exp:"琉球王国の成立は1429年（15世紀）。だから3班。テストは1班（旧石器時代）を選んだ。年表を思い出してから選ぶ。" },
+  { id:"t1-9", ref:"社会 問題2(5)", q:"衆議院の総選挙の日から30日以内に召集される国会", a:["特別会"], m:"exact", hint:"漢字", exp:"特別会（特別国会）。内閣総理大臣を指名する。" },
+  { id:"t1-10", ref:"社会 問題2(5)", q:"内閣が必要と認めたとき、またはいずれかの議院の総議員の4分の1以上の要求で召集される国会", a:["臨時会"], m:"exact", hint:"漢字", exp:"臨時会（臨時国会）。" },
+  { id:"t1-11", ref:"社会 問題2(3)b", q:"ある選挙の投票率：全体50%、20歳代35%、50歳代58%、60歳代68%、70歳代以上60%。全体の投票率を上回るのはどの年代？", a:["50歳代・60歳代・70歳代以上"], m:"ai", rule:"50歳代・60歳代・70歳代以上の3つがそろっていれば正解。", exp:"表の数字を1つずつ全体と比べる。グラフや表の問題は「最も高い・低い」の差も数字で確かめる（テストはアを読み切れなかった）。" },
+  { id:"t1-12", ref:"社会 問題5(1)", q:"たて穴住居・高床倉庫・ヤマト王権の大王。縄文〜弥生時代のことでないものは？", a:["ヤマト王権の大王"], m:"ai", rule:"ヤマト王権（大王）を選んでいれば正解。", exp:"ヤマト王権は古墳時代。たて穴住居＝縄文〜、高床倉庫＝弥生（稲作）。" },
+  { id:"t1-14", ref:"社会 問題3(4)b", q:"オランダだけ来航が続けられた理由（「布教」を使って）", a:["キリスト教の布教を行わなかったから"], m:"ai", rule:"「布教をしない（行わない）」内容なら正解。「布教した」は不正解。", exp:"テストは「布教したから」と逆に書いた。オランダはキリスト教を広めなかったので出島で貿易を許された。" },
+  { id:"t1-15", ref:"社会 問題5(4)", q:"太閤検地で百姓に課された義務（「石高」を使って）", a:["石高に応じて年貢を納める"], m:"ai", rule:"「石高に応じた（基づく）年貢を納める」内容なら正解。", exp:"検地帳に登録 → 耕す権利が保障され、その代わり石高に応じた年貢を納める。" },
+  { id:"t1-16", ref:"社会 問題5(5)", q:"元禄文化のころ「見返り美人図」をえがいた人物", a:["菱川師宣"], m:"exact", hint:"漢字", exp:"菱川師宣（ひしかわもろのぶ）。浮世絵。" },
+  { id:"t1-17", ref:"社会 問題7(2)", q:"十日町で米が単作になる理由（「冬」を使って）", a:["冬は積雪の期間が長く農作業ができないため"], m:"ai", rule:"「冬は雪が多い（積雪期間が長い）」内容があれば正解。「寒い」だけは不正解。", exp:"テストは「冬の寒さに弱い」。北陸は冬の雪 → 副業で地場産業が発達。" },
+  { id:"t1-13", ref:"社会 問題6(5)", q:"東経135度の日本が午前10時のとき、東経180度の国は何時？（午前・午後をつけて）", a:["午後1時"], m:"ai", rule:"午後1時（13時）なら正解。", exp:"経度差45度÷15=3時間。東のほうが進んでいる → 午後1時。<br>テストは「午後13時」と書いて×。計算は合っていた！「午後」をつけたら12を引く。" }
+  ]},
+
+{ id:"t2", day:"tue", slot:0, subj:"kokugo", type:"drill", min:25, title:"②④ 国語（漢字・古文・文法）",
+  lead:"国語は解答用紙が届いたら、記述のやり直しを追加します。今日は落とせない基本から。",
+  points:[
+    "<b>歴史的仮名遣い</b>：語中・語末のは行→わ行（おはする→おわする）、ぢ・づ→じ・ず（はづかし→はずかし）、ゐ・ゑ・を→い・え・お、au→ô（やうやう→ようよう）。",
+    "<b>係り結び</b>：ぞ・なむ・や・か → 連体形、<b>こそ → 已然形</b>（ゆゑあり → こそゆゑあれ）。",
+    "<b>古語</b>：あやし＝不思議だ、いと＝とても、うつくし＝かわいい、をかし＝趣がある、みめ＝見た目。",
+    "<b>熟語の構成</b>：似た意味（狩猟・製造）／反対（高低）／上が下を修飾（国立は主語＋述語）／動詞＋目的語（登山）。"
+  ],
+  items:[
+  { id:"t2-1", ref:"国語 問題一(一)", q:"漢字で書こう：新しいシステムに【イコウ】する。", a:["移行"], m:"exact", hint:"漢字", exp:"移行。" },
+  { id:"t2-2", ref:"国語 問題一(一)", q:"漢字で書こう：友だちのひと言に【スク】われる。", a:["救"], m:"exact", hint:"漢字（送り仮名があればひらがなも）", exp:"救われる。" },
+  { id:"t2-3", ref:"国語 問題一(一)", q:"漢字で書こう：【バンカン】の思いをこめる。", a:["万感"], m:"exact", hint:"漢字", exp:"万感（ばんかん）＝心にわき起こるさまざまな思い。" },
+  { id:"t2-4", ref:"国語 問題一(一)", q:"漢字で書こう：雪が【フ】り【ツ】もる。（「ふりつもる」をすべて）", a:["降り積もる"], m:"exact", hint:"漢字とひらがな", exp:"降り積もる。" },
+  { id:"t2-5", ref:"国語 問題三(一)", q:"読みをひらがなで：【余暇】を楽しむ。", a:["よか"], m:"exact", hint:"ひらがな", exp:"よか（仕事のない自由な時間）。" },
+  { id:"t2-6", ref:"国語 問題三(一)", q:"読みをひらがなで：【永く】使う。（送り仮名まで）", a:["ながく"], m:"exact", hint:"ひらがな", exp:"ながく。テストは「ながらく」。" },
+  { id:"t2-6b", q:"漢字で書こう：時代の【スイイ】を調べる。", a:["推移"], m:"exact", hint:"漢字", exp:"推移。" },
+  { id:"t2-7", ref:"国語 問題二(一)", q:"現代仮名遣いで（ひらがな）：おはする", a:["おわする"], m:"exact", hint:"ひらがな", exp:"語中の「は」→「わ」。" },
+  { id:"t2-8", q:"現代仮名遣いで（ひらがな）：あはれなり", a:["あわれなり"], m:"exact", hint:"ひらがな", exp:"は→わ。" },
+  { id:"t2-9", q:"現代仮名遣いで（ひらがな）：やうやう", a:["ようよう"], m:"exact", hint:"ひらがな", exp:"「やう」→「よう」（au→ô）。" },
+  { id:"t2-10", q:"現代仮名遣いで（ひらがな）：まゐる", a:["まいる"], m:"exact", hint:"ひらがな", exp:"ゐ→い。" },
+  { id:"t2-11", ref:"国語 問題二(三)", q:"文末が已然形（〜れ・〜け など）に変わる係りの助詞は？", a:["こそ"], m:"exact", hint:"ひらがな", exp:"こそ → 已然形。ぞ・なむ・や・か → 連体形。" },
+  { id:"t2-12", q:"古語「うつくし」の意味を現代語で", a:["かわいらしい"], m:"ai", rule:"「かわいい・かわいらしい・愛らしい」なら正解。「美しい」は不正解。", exp:"うつくし＝かわいらしい。" },
+  { id:"t2-13", ref:"国語 問題三(二)", q:"「狩猟」と同じ構成の熟語：登山・高低・国立・製造", a:["製造"], m:"exact", hint:"漢字", exp:"狩猟・製造はどちらも似た意味の字の組み合わせ。" },
+  { id:"t2-15", ref:"国語 問題一(三)", q:"問題用紙の<b>問題一(三)</b>をもう一度。本文の「サイダーハウス・ルール」の段落を読んで、20〜30字・「〜から」で。", a:["読んだ小説の主人公の苛々を、綾も感じていたと想像したから"], m:"ai", rule:"「小説の登場人物（主人公）と同じ苛々を綾も感じていたと想像した」内容で、文末が「から」なら正解。", exp:"傍線部の理由は、すぐ後の「それは〜から」の段落にある。指示語「それは」の後ろを探す（テストでは○をつけていたのに使えなかった）。" },
+  { id:"t2-14", ref:"国語 問題二(一)イ", q:"現代仮名遣いで（ひらがな）：はづかし", a:["はずかし"], m:"exact", hint:"ひらがな", exp:"「づ」→「ず」。テストは「はづかしい」と、直さずに「い」までつけた。古文の形（はずかし）のまま書く。" },
+  ]},
+
+{ id:"t4", day:"tue", slot:1, subj:"eigo", type:"listen", min:15, title:"英語リスニング（NEW HORIZON 3年の場面）",
+  lead:"▶で英語が流れる。1問につき2回まで聞ける。答えは日本語か英語で短く書く。",
+  items:[
+  { id:"t4-1", say:[["A","Kenta, what are you going to do this weekend?"],["B","I'm going to clean the beach with my volunteer club on Saturday. On Sunday, I'll study for the test."]], q:"ケンタは土曜日に何をする？", a:["ボランティア部で海岸のそうじ"], m:"ai", rule:"「海岸（ビーチ）のそうじ（清掃）」の内容があれば正解。", exp:"clean the beach with my volunteer club。" },
+  { id:"t4-2", say:[["A","How long have you lived in Japan, Ms. Brown?"],["B","I have lived here for five years. I came here when I was twenty-five."]], q:"ブラウン先生は日本に何年住んでいる？", a:["5年"], m:"ai", rule:"5年なら正解。", exp:"for five years。25歳は来たときの年齢。" },
+  { id:"t4-3", say:[["A","Which do you like better, summer or winter?"],["B","I like winter better because I can go skiing with my family."]], q:"Bが冬のほうが好きな理由は？", a:["家族とスキーに行けるから"], m:"ai", rule:"「（家族と）スキーに行ける」内容なら正解。", exp:"because I can go skiing with my family。" },
+  { id:"t4-4", say:[["A","Excuse me. Could you tell me how to get to the station?"],["B","Sure. Go straight and turn left at the second corner. You'll see it on your right."]], q:"駅へは、何番目の角をどちらに曲がる？", a:["2番目の角を左"], m:"ai", rule:"「2番目の角」と「左」の両方があれば正解。", exp:"turn left at the second corner。" },
+  { id:"t4-5", say:[["N","Our class visited Kyoto on the school trip. We saw many old temples. I was most impressed by Kinkakuji. I want to visit Kyoto again with my family."]], q:"話した人がいちばん感動したものは？", a:["金閣寺"], m:"ai", rule:"金閣寺（Kinkakuji）なら正解。", exp:"I was most impressed by Kinkakuji。" },
+  { id:"t4-6", say:[["A","Have you finished your homework yet, Yuki?"],["B","Not yet. I've just finished the math homework. I still have English homework."]], q:"ユキがまだ終わっていない宿題は何の教科？", a:["英語"], m:"ai", rule:"英語なら正解。", exp:"I still have English homework。math は終わった。" },
+  { id:"t4-7", say:[["N","Some people say AI will take our jobs. I think AI is a useful tool. It can help doctors find diseases faster. But people should make the final decisions."]], q:"話した人は、最後に決めるのはだれだと言っている？", a:["人（人間）"], m:"ai", rule:"人・人間（people）なら正解。", exp:"people should make the final decisions。" },
+  { id:"t4-8", say:[["A","The movie starts at three. Let's meet at two thirty in front of the theater."],["B","OK. But the bus is often late, so let's meet at two fifteen."]], q:"二人は最終的に何時に会う？", a:["2時15分"], m:"ai", rule:"2時15分（2:15）なら正解。", exp:"最後に two fifteen に変えた。最後まで聞いて答える。" }
+  ]},
+
+{ id:"t5", day:"tue", slot:1, subj:"mix", type:"mix", min:25, title:"総復習（2日間でまちがえた問題）", lead:"月曜・火曜でまちがえた問題をもう一度。ないときは数学・理科の補強から出題。" },
+
+{ id:"t6", day:"tue", slot:1, subj:"mix", type:"explain", min:20, title:"③ 最終の説明タイム",
+  lead:"2日間のしめくくり。言えたポイントにチェック。",
+  items:[
+  { id:"t6-1", ref:"数学 問題1(4)", q:"(a+b)²+8(a+b)+15 の因数分解", pts:["a+b を A と置く","A²+8A+15=(A+3)(A+5)","A を戻して (a+b+3)(a+b+5)"] },
+  { id:"t6-2", ref:"数学 問題2(5)", q:"√(3n) が整数になる n の見つけ方", pts:["5<√n<6 を2乗して 25<n<36","3n が平方数（9の倍数で…81）になればよい","n=27"] },
+  { id:"t6-3", ref:"社会 問題1(2)", q:"自由権と社会権のちがい", pts:["自由権＝国から自由をうばわれない権利（表現・身体・経済）","社会権＝人間らしい生活を国に保障してもらう権利（生存権・教育）","教育を受ける権利は社会権"] },
+  { id:"t6-4", ref:"社会 問題3(4)b", q:"鎖国中にオランダだけ貿易できた理由", pts:["幕府はキリスト教を禁止した","オランダはキリスト教の布教をしなかった","だから長崎の出島で貿易を許された"] }
+  ]},
+
+{ id:"t7", day:"tue", slot:null, subj:"eigo", type:"drill", min:40, title:"＋ 英語を書く（問題4・英作文）",
+  points:[
+    "<b>英作文は白紙が0点、3文書けば点になる。</b>型：①答え → ②理由・具体例 → ③気持ち。",
+    "使える文：I like to 〜. / I often 〜 with 人. / because 〜. / It makes me happy. / I want to 〜.",
+    "<b>会話の空所2語</b>：前後の文を読んで「だれ・何時・何に興味」を決める。疑問文の語順（Are you 〜? / What time 〜?）に注意。"
+  ],
+  items:[
+  { id:"t7-1", ref:"英語 問題4(2)", q:"( )に2語：A: ( ) you ( ) in music? B: Yes. I play the guitar every day.", a:["Are, interested"], m:"ai", rule:"Are と interested の2語なら正解（大文字小文字は問わない）。", exp:"Are you interested in 〜? テストは Do / like。in があるので interested。" },
+  { id:"t7-2", ref:"英語 問題4(4)", q:"( )に2語：A: What are you doing? B: I'm ( ) ( ) my pencil case. I can't find it.", a:["looking for"], m:"ai", rule:"looking for なら正解。", exp:"I can't find it → さがしている → looking for。" },
+  { id:"t7-3", ref:"英語 問題4(5)", q:"( )に2語：A: Do you know ( ) Ken ( ) for lunch? B: He had curry.", a:["what had"], m:"ai", rule:"what と had の2語なら正解。", exp:"間接疑問：what＋Ken＋had。答えが had curry なので過去形。" },
+  { id:"t7-4", ref:"英語 問題6(1)", q:"時刻表で、記号（*）のついた電車は Express trains、それ以外は Local trains。Which trains are faster? に、表の名前を使って答えよう（2語）。", a:["Express trains"], m:"ai", rule:"Express trains なら正解。", exp:"表の中のことばをそのまま使う。テストは Trains with an asterisk と自分で作って×。" },
+  { id:"t7-5", ref:"英語 問題7", q:"英作文（3文以上）：When are you happy?", a:["自由英作文"], m:"ai", big:true, rule:"英語3文以上で、いつ幸せかに答えていて、全体で15語以上なら正解。文法ミスが3つ以上あれば不正解。", exp:"例：I am happy when I play soccer with my friends. We play it every Sunday. It makes me feel good." },
+  { id:"t7-6", q:"英作文（3文以上）：Which do you like better, summer or winter?", a:["自由英作文"], m:"ai", big:true, rule:"英語3文以上で、どちらかを選び理由があり、全体で15語以上なら正解。文法ミスが3つ以上あれば不正解。", exp:"例：I like summer better. I can swim in the sea. I also like shaved ice." }
+  ]},
+
+{ id:"t8", day:"tue", slot:null, subj:"kokugo", type:"drill", min:60, title:"＋ 国語（記述の型と作文）",
+  points:[
+    "<b>理由を聞かれたら「〜から。」で終わる</b>。字数指定（〜字以上〜字以内）は最低字数を必ずこえる。",
+    "<b>答えは本文の中</b>。傍線部の前後・「それは」「つまり」の後ろを探して、ことばを借りてまとめる。",
+    "<b>作文（150字程度・2段落）</b>：①段落「私は賛成（反対）だ。理由は〜からだ。」 ②段落「確かに〜という意見もある。しかし〜。だから〜。」",
+    "作文は<b>白紙が0点（テストは8点分）</b>。型どおり書けば半分以上とれる。"
+  ],
+  items:[
+  { id:"t8-1", q:"次の文を読んで答えよう。<br>〈ゆうたは毎朝、だれよりも早く教室に来て窓を開ける。去年、かぜで休む人が多かったとき、先生が「空気を入れかえると、かぜがうつりにくくなる」と話したのを覚えていたからだ。〉<br>ゆうたが毎朝窓を開けるのはなぜか。20〜30字・「〜から」で。", a:["空気を入れかえると、かぜがうつりにくくなると先生から聞いたから"], m:"ai", big:true, rule:"「空気を入れかえるとかぜがうつりにくくなる（と先生が話した・覚えていた）」内容があり、文末が「から」、20〜30字程度なら正解。", exp:"理由は「〜からだ」の文にある。本文のことばを借りてまとめる。" },
+  { id:"t8-2", q:"次の文を読んで答えよう。<br>〈祖母の畑では、毎年同じ場所に同じ野菜を植えない。同じ野菜を続けて育てると、土の中の養分がかたより、病気も出やすくなるからだ。祖母はノートに、どこに何を植えたかを書きとめている。〉<br>祖母がノートに記録をつけているのは何のためか。「〜ため」で20字程度。", a:["毎年同じ場所に同じ野菜を植えないようにするため"], m:"ai", big:true, rule:"「同じ場所に同じ野菜を植えない（続けて育てない）ようにする」内容で、文末が「ため」なら正解。", exp:"ノートの目的は、前の文の「同じ場所に同じ野菜を植えない」につながる。" },
+  { id:"t8-3", ref:"国語 問題四", q:"作文（150字程度・2段落）：「中学校で、授業中にタブレットで調べものをする時間をもっと増やすべきだ」という意見に賛成か反対か。①段落に立場と理由、②段落に反対の立場の意見とそれへの反論。", a:["作文"], m:"ai", big:true, rule:"2段落で、1段落目に賛成か反対かの立場と理由、2段落目に反対の立場から予想される意見とそれへの反論がある。全体で120字以上。題名・氏名がない。これらを満たせば正解。", exp:"型：私は〜に賛成だ。理由は〜からだ。／確かに〜という意見もある。しかし〜。だから私は〜と考える。" }
+  ]}
+];
+
+/* まだ解答用紙で確認できていない問題（①やり直しの追加候補）
+   英語 問題4・6(1)・7・8(2)〜(5)、社会 問題3〜8の記号問題、国語 全般 → 解答用紙が届いたら追加 */
+
+</script>
+<script>
+/* ============================================================
+   保存
+   ============================================================ */
+const STORE_KEY = "sou3-yarinaoshi4-2026-11";
+let store = { key:"", model:"gemini-flash-latest", res:{}, blocks:{}, explain:{}, day:"mon" };
+function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"null"); if(s) store=Object.assign(store,s); }catch(e){} }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
+/* APIキーは、同じサイトの手書き一問一答（kijutsu250）で入れたものを使う */
+function apiKey(){
+  if(store.key) return store.key;
+  try{ const k=JSON.parse(localStorage.getItem("kijutsu250_v1")||"null"); if(k&&k.key) return k.key; }catch(e){}
+  return "";
+}
+function modelName(){
+  if(store.model) return store.model;
+  return "gemini-flash-latest";
+}
+load();
+
+/* ============================================================
+   ホーム
+   ============================================================ */
+const $ = id => document.getElementById(id);
+function color(s){ return `var(--${s})`; }
+function blocksOf(day){ return BLOCKS.filter(b=>b.day===day); }
+function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+function fmtClock(min){ const h=Math.floor(min/60), m=min%60; return `${h}:${String(m).padStart(2,"0")}`; }
+function dayTotal(d){ return DAYS[d].slots.length*60; }
+
+function renderHome(){
+  $("tabs").innerHTML = Object.keys(DAYS).map(d=>{
+    const bs=blocksOf(d).filter(b=>b.slot!=null), done=bs.filter(b=>store.blocks[b.id]?.done).length;
+    return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('${d}')">${DAYS[d].label}<small>${dayTotal(d)/60}時間・${done}/${bs.length} 終了</small></button>`;
+  }).join("");
+  const bs = blocksOf(store.day);
+  const sched = bs.filter(b=>b.slot!=null);
+  let doneMin=0, html="", fo=bs.indexOf(sched[firstOpen(sched)]);
+  DAYS[store.day].slots.forEach((sl,si)=>{
+    const inSlot = bs.filter(b=>b.slot===si);
+    html += `<div class="slothead">${sl[0]}〜${sl[1]}</div>`;
+    let t=toMin(sl[0]);
+    html += inSlot.map(b=>{
+    const i=bs.indexOf(b);
+    const st = store.blocks[b.id]||{};
+    const start=t; t+=b.min; if(st.done) doneMin+=b.min;
+    const label = st.done ? (st.score!=null ? `済 ${st.score}` : "済") : (i===fo ? "▶ つぎ" : "");
+    return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
+      <div class="tm"><b>${fmtClock(start)}〜</b>${b.min}分</div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}</small></div>
+      <div class="st">${label}</div>
+      <button class="btn sm ${st.done?"":"primary"}" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button>
+    </div>`;
+    }).join("");
+    const next=DAYS[store.day].slots[si+1];
+    if(next){ const gap=toMin(next[0])-toMin(sl[1]); html += `<div class="gap">${gap>=60?"🍚 夕食・休けい":"☕ 休けい"}（${gap}分）</div>`; }
+  });
+  const opt = bs.filter(b=>b.slot==null);
+  if(opt.length){
+    html += `<div class="slothead" style="color:var(--sub)">＋ 時間があれば（予定外・やらなくてもOK）</div>`;
+    html += opt.map(b=>{ const st=store.blocks[b.id]||{};
+      return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
+      <div class="tm"><b>任意</b>${b.min}分</div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}</small></div>
+      <div class="st">${st.done?(st.score?`済 ${st.score}`:"済"):""}</div>
+      <button class="btn sm" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button></div>`; }).join("");
+  }
+  $("blockList").innerHTML = html;
+  $("dayBar").style.width = Math.round(doneMin/dayTotal(store.day)*100)+"%";
+  $("modeNote").innerHTML = (apiKey()
+    ? "採点：<b>AI採点</b>（手書き一問一答と同じ Gemini キーを使用）"
+    : "採点：<b>自己採点</b>（⚙設定で Gemini APIキーを入れるとAI採点）")
+    + "<br>①は問題用紙を見ながら解きます。問題用紙の文章はこのアプリには入っていません。";
+}
+function firstOpen(bs){ const i=bs.findIndex(b=>!store.blocks[b.id]?.done); return i; }
+function pickDay(d){ store.day=d; save(); renderHome(); }
+
+/* ============================================================
+   ブロックの実行
+   ============================================================ */
+let run=null, clockTimer=null;
+function startBlock(id){
+  const b = BLOCKS.find(x=>x.id===id);
+  run = { b, t0:Date.now(), idx:0, queue:[], round:1, ok:0, n:0, phase:"intro" };
+  if(b.type==="mix") run.items = mixItems(b);
+  else run.items = (b.items||[]).slice();
+  $("home").classList.add("hidden"); $("run").classList.remove("hidden");
+  document.documentElement.style.setProperty("--c", color(b.subj));
+  $("rTag").textContent = SUBJ[b.subj]; $("rTag").style.background = color(b.subj);
+  clearInterval(clockTimer); clockTimer=setInterval(tick,1000); tick();
+  showIntro();
+}
+function tick(){
+  if(!run) return;
+  const sec=Math.floor((Date.now()-run.t0)/1000), lim=run.b.min*60;
+  if(run.b.type==="break"){
+    const left=Math.max(0,lim-sec);
+    $("rClock").textContent = `のこり ${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;
+    const big=$("breakLeft"); if(big) big.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;
+    if(left===0 && !run.rang){ run.rang=true; beep(); }
+    $("rClock").classList.remove("over"); return;
+  }
+  $("rClock").textContent = `${Math.floor(sec/60)}分 / ${run.b.min}分`;
+  $("rClock").classList.toggle("over", sec>lim);
+}
+function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(); o.frequency.value=880; o.connect(a.destination); o.start(); setTimeout(()=>{o.stop();a.close();},600);}catch(e){} }
+function setProg(){
+  const tot = run.items.length||1;
+  $("rProg").style.width = Math.round(Math.min(run.idx,tot)/tot*100)+"%";
+  $("rCount").textContent = run.items.length ? `${Math.min(run.idx+1,tot)}/${tot}${run.round>1?"（2回目）":""}` : "";
+}
+function showIntro(){
+  const b=run.b; hidePad(); setProg();
+  if(b.type==="break"){
+    $("stage").innerHTML = `<div class="card" style="text-align:center"><div class="lead">${b.title}</div>
+      <div class="big" id="breakLeft"></div><div class="lead">目を休めて、水を飲もう。</div>
+      <div style="margin-top:14px"><button class="btn primary" onclick="finishBlock(null)">休けい終わり</button></div></div>`;
+    tick(); return;
+  }
+  let h = `<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:8px">${b.title}</div>`;
+  if(b.lead) h += `<div class="lead">${b.lead}</div>`;
+  if(b.points) h += `<ul class="points">${b.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
+  if(b.type==="mix" && !run.items.length) h += `<div class="lead" style="margin-top:8px">まちがえた問題はありません！ このブロックは終わりにしてOK。</div>`;
+  h += `</div><div class="tools"><div class="sp"></div>`;
+  h += (b.type==="mix" && !run.items.length)
+    ? `<button class="btn primary" onclick="finishBlock(null)">終わる</button>`
+    : `<button class="btn primary" onclick="nextItem()">${b.points?"ポイントを読んだ → 問題へ":"はじめる"}</button>`;
+  $("stage").innerHTML = h + `</div>`;
+}
+function curItem(){ return run.round===1 ? run.items[run.idx] : run.queue[run.idx]; }
+function nextItem(){
+  const list = run.round===1 ? run.items : run.queue;
+  if(run.idx >= list.length){
+    /* 1回目でまちがえた問題を、その場でもう一度（最大10問） */
+    if(run.round===1 && run.wrongNow && run.wrongNow.length && run.b.type!=="explain"){
+      run.round=2; run.queue=run.wrongNow.slice(0,10); run.idx=0; run.wrongNow=[];
+      $("stage").innerHTML = `<div class="card"><div class="lead"><b>まちがえた ${run.queue.length} 問を、もう一度だけ。</b><br>解説を思い出して書こう。</div></div>
+        <div class="tools"><div class="sp"></div><button class="btn primary" onclick="showItem()">2回目へ</button></div>`;
+      hidePad(); return;
+    }
+    return finishBlock(run.n ? Math.round(run.ok/run.n*100) : null);
+  }
+  showItem();
+}
+function showItem(){
+  const it=curItem(); setProg();
+  if(run.b.type==="explain") return showExplain(it);
+  let h = `<div class="card">`;
+  if(it.ref) h += `<div class="ref">問題用紙 ${it.ref}</div>`;
+  if(it.say){
+    run.plays=0;
+    h += `<div class="say"><button class="btn primary listenbtn" id="playBtn" onclick="playSay()">▶ 聞く</button><span id="playLeft" style="color:var(--sub)">あと2回</span></div>`;
+  }
+  h += `<div class="qtext" style="margin-top:6px">${it.q}</div>`;
+  if(it.hint) h += `<div style="margin-top:10px"><button class="btn sm" onclick="this.outerHTML='<div class=hintbox>💡 ${esc(it.hint)}</div>'">💡 ヒント</button></div>`;
+  h += `</div>`;
+  $("stage").innerHTML = h;
+  showPad();
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+
+/* ---------- 説明タイム ---------- */
+function showExplain(it){
+  hidePad();
+  $("stage").innerHTML = `<div class="card">${it.ref?`<div class="ref">問題用紙 ${it.ref}</div>`:""}
+    <div class="qtext">「${it.q}」を説明しよう</div>
+    <div class="lead" style="color:var(--sub);margin-top:6px">聞く人：言えたポイントにチェック</div>
+    <div class="pts">${it.pts.map((p,i)=>`<label><input type="checkbox" id="pt${i}" onchange="ptCheck()"> ${p}</label>`).join("")}</div></div>
+    <div class="tools"><button class="btn" onclick="explainDone(false)">もう一度あとで</button><div class="sp"></div>
+    <button class="btn ok" id="exOk" onclick="explainDone(true)" disabled>説明できた</button></div>`;
+}
+function ptCheck(){ const it=curItem(); $("exOk").disabled = !it.pts.every((_,i)=>$("pt"+i).checked); }
+function explainDone(ok){
+  const it=curItem(); store.explain[it.id]={ok, ts:Date.now()}; save();
+  run.n++; if(ok) run.ok++; run.idx++; nextItem();
+}
+
+/* ---------- リスニング ---------- */
+function playSay(){
+  const it=curItem(); if(run.plays>=2) return;
+  if(!("speechSynthesis" in window)){ alert("この端末は音声読み上げに対応していません。"); return; }
+  run.plays++; $("playLeft").textContent = run.plays>=2 ? "（もう聞けません）" : "あと1回";
+  if(run.plays>=2) $("playBtn").disabled=true;
+  speechSynthesis.cancel();
+  const voices=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+  const vA=voices.find(v=>/US/i.test(v.lang))||voices[0], vB=voices.find(v=>v!==vA)||vA;
+  it.say.forEach(([who,txt],i)=>{
+    const u=new SpeechSynthesisUtterance(txt); u.lang="en-US"; u.rate=0.88;
+    if(who==="B"){ u.voice=vB; u.pitch=1.25; } else { u.voice=vA; u.pitch=who==="N"?1:0.9; }
+    speechSynthesis.speak(u);
+    if(i<it.say.length-1){ const g=new SpeechSynthesisUtterance(" "); g.rate=0.5; speechSynthesis.speak(g); }
+  });
+}
+if("speechSynthesis" in window) speechSynthesis.getVoices();
+
+/* ---------- 総復習：まちがえた問題を集める ---------- */
+function mixItems(b){
+  const day = b.day;
+  const pool = BLOCKS.filter(x=>x.items && x.type!=="explain" && x.type!=="mix" && (day==="tue" || x.day==="mon"));
+  const all = pool.flatMap(x=>x.items.map(it=>Object.assign({},it,{_subj:x.subj})));
+  const wrong = all.filter(it=>store.res[it.id] && !store.res[it.id].ok);
+  if(wrong.length || day==="mon") return wrong.slice(0,20);
+  /* 火曜でまちがいがないときは数学・理科の補強からランダム */
+  return all.filter(it=>/^m4-|^m8-/.test(it.id)).sort(()=>Math.random()-.5).slice(0,10);
+}
+
+/* ---------- 終了 ---------- */
+function finishBlock(score){
+  const b=run.b, sec=Math.floor((Date.now()-run.t0)/1000);
+  store.blocks[b.id] = { done:true, score: score!=null ? score+"%" : null, sec, ts:Date.now() }; save();
+  clearInterval(clockTimer); hidePad(); speechSynthesis?.cancel?.();
+  const msg = score==null ? "おつかれさま！" : (score>=80 ? "よくできました！" : score>=50 ? "もう少し！ まちがいは総復習でまた出ます。" : "まちがえた問題は総復習でもう一度出ます。");
+  $("stage").innerHTML = `<div class="card" style="text-align:center">
+    <div class="lead">${b.title}</div>${score!=null?`<div class="big">${score}%</div>`:""}
+    <div class="lead">${msg}<br>かかった時間：${Math.round(sec/60)}分（目安 ${b.min}分）</div></div>
+    <div class="tools"><div class="sp"></div><button class="btn primary" onclick="goHome()">つぎへ（ホーム）</button></div>`;
+  $("rProg").style.width="100%";
+}
+function quitBlock(){ if(!confirm("このブロックを中断してホームにもどる？（ここまでの〇×は記録されます）")) return; goHome(); }
+function goHome(){ clearInterval(clockTimer); run=null; hidePad(); try{speechSynthesis.cancel();}catch(e){}
+  $("run").classList.add("hidden"); $("home").classList.remove("hidden"); renderHome(); window.scrollTo(0,0); }
+
+/* ============================================================
+   手書きパッド（kijutsu250 と同じしくみ）
+   ============================================================ */
+const pad=$("pad"), ctx=pad.getContext("2d");
+let strokes=[], curStroke=null, activePointer=null, locked=false;
+function showPad(){
+  $("padArea").classList.remove("hidden"); $("resBox").innerHTML="";
+  pad.classList.toggle("big", !!(curItem()&&curItem().big));
+  strokes=[]; locked=false; $("gradeBtn").disabled=false; $("gradeBtn").innerHTML="答え合わせ";
+  resizePad();
+}
+function hidePad(){ $("padArea").classList.add("hidden"); $("resBox").innerHTML=""; }
+function resizePad(){ const r=pad.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  pad.width=Math.round(r.width*d); pad.height=Math.round(r.height*d); ctx.setTransform(d,0,0,d,0,0); redraw(); }
+window.addEventListener("resize",()=>{ if(!$("padArea").classList.contains("hidden")) resizePad(); });
+function pt(e){ const r=pad.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top,p:(e.pointerType==="pen"&&e.pressure>0)?e.pressure:0.5}; }
+function drawSeg(a,b){ ctx.strokeStyle="#111"; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=2+b.p*3.2; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+function drawStroke(s){ if(s.length===1){ ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(s[0].x,s[0].y,2.5,0,7); ctx.fill(); return; } for(let i=1;i<s.length;i++) drawSeg(s[i-1],s[i]); }
+function redraw(){ const r=pad.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height); strokes.forEach(drawStroke); $("padHint").style.display=strokes.length?"none":"block"; }
+pad.addEventListener("pointerdown",e=>{ if(locked||activePointer!==null) return; activePointer=e.pointerId; pad.setPointerCapture(e.pointerId);
+  curStroke=[pt(e)]; strokes.push(curStroke); drawStroke(curStroke); $("padHint").style.display="none"; e.preventDefault(); });
+pad.addEventListener("pointermove",e=>{ if(e.pointerId!==activePointer||!curStroke) return;
+  (e.getCoalescedEvents?e.getCoalescedEvents():[e]).forEach(ev=>{ const p=pt(ev), last=curStroke[curStroke.length-1]; curStroke.push(p); drawSeg(last,p); }); e.preventDefault(); });
+function endStroke(e){ if(e.pointerId!==activePointer) return; activePointer=null; curStroke=null; }
+pad.addEventListener("pointerup",endStroke); pad.addEventListener("pointercancel",endStroke);
+function undo(){ if(locked) return; strokes.pop(); redraw(); }
+function clearPad(){ if(locked) return; strokes=[]; redraw(); }
+function exportImage(){
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  strokes.forEach(s=>s.forEach(p=>{minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);maxX=Math.max(maxX,p.x);maxY=Math.max(maxY,p.y);}));
+  const m=20; minX-=m;minY-=m;maxX+=m;maxY+=m; const w=maxX-minX,h=maxY-minY, sc=Math.min(1.5,768/Math.max(w,h));
+  const c=document.createElement("canvas"); c.width=Math.round(w*sc); c.height=Math.round(h*sc);
+  const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.setTransform(sc,0,0,sc,-minX*sc,-minY*sc);
+  x.strokeStyle="#000"; x.fillStyle="#000"; x.lineCap="round"; x.lineJoin="round";
+  strokes.forEach(s=>{ if(s.length===1){ x.beginPath(); x.arc(s[0].x,s[0].y,2.5,0,7); x.fill(); return; }
+    for(let i=1;i<s.length;i++){ x.lineWidth=2+s[i].p*3.2; x.beginPath(); x.moveTo(s[i-1].x,s[i-1].y); x.lineTo(s[i].x,s[i].y); x.stroke(); } });
+  return c.toDataURL("image/jpeg",0.85);
+}
+
+/* ============================================================
+   採点（Gemini）
+   ============================================================ */
+function stripTags(h){ const d=document.createElement("div"); d.innerHTML=String(h).replace(/<br>/g," / "); return d.textContent; }
+async function callGemini(prompt, img, maxTok){
+  const parts=[{text:prompt}]; if(img) parts.push({inline_data:{mime_type:"image/jpeg",data:img.split(",")[1]}});
+  const body={contents:[{parts}],generationConfig:{temperature:0,responseMimeType:"application/json",maxOutputTokens:maxTok,thinkingConfig:{thinkingLevel:"minimal"}}};
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName())}:generateContent`;
+  const call=b=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":apiKey()},body:JSON.stringify(b)});
+  let res=await call(body);
+  if(res.status===400){ delete body.generationConfig.thinkingConfig; body.generationConfig.maxOutputTokens=Math.max(1024,maxTok); res=await call(body); }
+  if(!res.ok){ let m="HTTP "+res.status; try{ const j=await res.json(); m=j.error?.message?.slice(0,80)||m; }catch(e){} throw new Error(m); }
+  const j=await res.json(); const t=j.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+  const mm=t.match(/\{[\s\S]*\}/); if(!mm) throw new Error("応答を読み取れません"); return JSON.parse(mm[0]);
+}
+function norm(x){ return String(x||"").normalize("NFKC").replace(/[\s　.,。、・「」『』"'’()（）]/g,"").replace(/[−–ー―]/g,"-").toLowerCase(); }
+function exactMatch(read, it){
+  const r=norm(read); if(!r||r.includes("?")) return false;
+  return it.a.some(a=>{ const n=norm(a); return r===n || (r.startsWith(n) && /^[ぁ-ゟ]+$/.test(r.slice(n.length))); });
+}
+async function aiGrade(it, img){
+  if(it.m==="exact"){
+    const r=await callGemini(`手書き文字を一字一句そのまま書き起こす。誤字・脱字・つづり誤りも直さず、推測で補わない。読めない字は?。\n文字種:${it.hint||"指定なし"}\nJSONのみ:{"read":"書き起こし","unclear":true/false}`, img, 120);
+    const ok=exactMatch(r.read,it);
+    return {read:r.read, correct:ok, comment:r.unclear?"読み取りに自信がありません。判定を確認してください。":""};
+  }
+  return await callGemini(`中3の手書き解答を採点。画像の文字を推測せず読み取り、基準に従い判定。\n問題:${stripTags(it.q)}\n正解:${it.a.join("／")}\n基準:${it.rule||"正解と同じ内容なら正解"}\nJSONのみ:{"read":"読取","correct":true/false,"comment":"20字以内"}`, img, 220);
+}
+async function onGrade(){
+  if(!strokes.length){ alert("答えを書いてから答え合わせをしよう。"); return; }
+  const it=curItem(); locked=true; $("gradeBtn").disabled=true;
+  if(!apiKey()){ return showResult(it, null); }
+  $("gradeBtn").innerHTML=`<span class="spinner"></span>採点中…`;
+  try{ const r=await aiGrade(it, exportImage()); showResult(it, r); }
+  catch(e){ $("resBox").innerHTML=`<div class="res"><div class="row">AI採点ができませんでした（${esc(e.message)}）。自己採点にします。</div></div>`; showResult(it,null,true); }
+}
+function showResult(it, r, keep){
+  $("gradeBtn").innerHTML="答え合わせ";
+  const box=$("resBox");
+  if(!r){ /* 自己採点 */
+    box.innerHTML = (keep?box.innerHTML:"") + `<div class="res"><div class="row"><b>正解</b>${esc(it.a[0])}</div><div class="row">${it.exp||""}</div>
+      <div class="fix"><span style="align-self:center">自分の答えは…</span><button class="btn ok" onclick="record(true)">〇 合っていた</button><button class="btn ng" onclick="record(false)">✕ ちがった</button></div></div>`;
+    return;
+  }
+  const ok=!!r.correct; run.last={ok, read:r.read};
+  box.innerHTML = `<div class="res ${ok?"ok":"ng"}"><span class="mark">${ok?"〇":"✕"}</span>
+    <div class="row"><b>読み取り</b>${esc(r.read||"")}</div>
+    <div class="row"><b>正解</b>${esc(it.a[0])}</div>
+    ${r.comment?`<div class="row" style="color:var(--sub)">${esc(r.comment)}</div>`:""}
+    <div class="row">${it.exp||""}</div>
+    <div class="fix"><button class="btn sm" onclick="flip()">判定がおかしい → ${ok?"✕":"〇"}にする</button><div style="flex:1"></div>
+    <button class="btn primary" onclick="record(${ok})">つぎへ</button></div></div>`;
+}
+function flip(){ const it=curItem(); const ok=!run.last.ok; showResult(it,{correct:ok,read:run.last.read,comment:"（判定を手で直しました）"}); }
+function record(ok){
+  const it=curItem();
+  if(run.round===1){ run.n++; if(ok) run.ok++; if(!ok){ (run.wrongNow=run.wrongNow||[]).push(it); } }
+  /* 2回目で〇でも、1回目の✕は総復習に残す（同じ日に3回目を出すため）。総復習で〇になったら消える */
+  const prev=store.res[it.id];
+  const keepWrong = run.round===2 || (prev && !prev.ok && run.b.type!=="mix");
+  store.res[it.id]={ ok: keepWrong ? false : ok, last:ok, ts:Date.now(), tries:(prev?.tries||0)+1 };
+  if(run.b.type==="mix" && ok) store.res[it.id].ok=true;
+  save(); run.idx++; nextItem();
+}
+
+/* ============================================================
+   記録・LINE・設定
+   ============================================================ */
+function summaryText(){
+  let t="【診断④やり直し】\n";
+  Object.keys(DAYS).forEach(d=>{
+    t+=`■${DAYS[d].label}\n`;
+    blocksOf(d).filter(b=>b.type!=="break").forEach(b=>{ const s=store.blocks[b.id];
+      t+=`・${b.title}：${s?.done?(s.score||"済")+`（${Math.round((s.sec||0)/60)}分）`:"未"}\n`; });
+  });
+  const wrong=BLOCKS.flatMap(b=>(b.items||[]).filter(it=>store.res[it.id]&&!store.res[it.id].ok).map(it=>it.ref||it.id));
+  const ex=BLOCKS.flatMap(b=>b.type==="explain"?b.items.filter(it=>store.explain[it.id]&&!store.explain[it.id].ok).map(it=>it.q):[]);
+  if(wrong.length) t+=`まだ✕：${[...new Set(wrong)].slice(0,15).join("、")}\n`;
+  if(ex.length) t+=`説明やり直し：${ex.join("、")}\n`;
+  return t;
+}
+function openSummary(){
+  const rows=Object.keys(DAYS).map(d=>`<tr><th colspan="3">${DAYS[d].label}</th></tr>`+blocksOf(d).filter(b=>b.type!=="break").map(b=>{const s=store.blocks[b.id];
+    return `<tr><td>${b.title}</td><td>${s?.done?(s.score||"済"):"—"}</td><td>${s?.done?Math.round((s.sec||0)/60)+"分":""}</td></tr>`;}).join("")).join("");
+  modal(`<div style="font-size:18px;font-weight:800;margin-bottom:8px">記録</div><table class="sum">${rows}</table>
+    <div class="tools"><button class="btn" onclick="resetAll()">記録を消す</button><div class="sp"></div>
+    <button class="btn ok" onclick="sendLine()">LINEで送る</button><button class="btn primary" onclick="closeModal()">閉じる</button></div>`);
+}
+function sendLine(){ location.href="https://line.me/R/msg/text/?"+encodeURIComponent(summaryText()); }
+function resetAll(){ if(!confirm("2日間の記録をすべて消しますか？")) return; store.res={}; store.blocks={}; store.explain={}; save(); closeModal(); renderHome(); }
+function openSettings(){
+  modal(`<div style="font-size:18px;font-weight:800">設定</div>
+    <label>Gemini APIキー（空欄なら手書き一問一答のキーを使う／なければ自己採点）<input type="text" id="sKey" value="${esc(store.key||"")}" placeholder="${apiKey()?"手書き一問一答のキーを使用中":"未設定"}"></label>
+    <label>モデル<input type="text" id="sModel" value="${esc(store.model||"")}" placeholder="gemini-flash-latest"></label>
+    <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">やめる</button><button class="btn primary" onclick="saveSettings()">保存</button></div>`);
+}
+function saveSettings(){ store.key=$("sKey").value.trim(); store.model=$("sModel").value.trim()||"gemini-flash-latest"; save(); closeModal(); renderHome(); }
+function modal(h){ $("modalBody").innerHTML=h; $("modal").classList.remove("hidden"); }
+function closeModal(){ $("modal").classList.add("hidden"); }
+
+renderHome();
+</script>
+</body>
+</html>
