@@ -511,7 +511,7 @@ for(const k in REDO) REDO[k].forEach(it=>{ if(STEMS[it.id]) it.q = (it.m==="self
 const DAYS = {
   mon: { label: "11/16（月）", slots: [["17:00","18:00"],["19:30","20:30"],["20:45","21:45"],["22:00","23:00"]] },
   tue: { label: "11/17（火）", slots: [["20:45","21:45"],["22:00","23:00"]] },
-  wed: { label: "11/18（水）", slots: [] }
+  wed: { label: "11/18（水）", slots: [["20:45","21:45"],["22:00","23:00"]] }
 };
 
 /* 教科の色は kijutsu250 と同じ */
@@ -769,7 +769,80 @@ const BLOCKS = [
 
 { id:"t5", day:"tue", slot:null, subj:"mix", type:"mix", min:25, title:"＋ 火曜のまとめ（火曜にまちがえた問題）", lead:"月曜・火曜でまちがえた問題をもう一度。ないときは数学・理科の補強から出題。" },
 
-{ id:"wk", day:"wed", slot:null, subj:"kokugo", type:"drill", min:10, title:"漢字の書き取り（テストは4問全滅）", voice:"漢字は、とめ、はね、はらいまで、ていねいに。",
+{ id:"w-sugaku", day:"wed", slot:0, subj:"sugaku", type:"weak", min:10, title:"① 数学 まだ✕の問題", lead:"月曜・火曜でまちがえて、まだ直っていない数学の問題。〇になったら消えます。" },
+
+{ id:"ws", day:"wed", slot:0, subj:"sugaku", type:"drill", min:30, title:"④ 数学の類似問題（まだ✕の5問と同じ考え方）",
+  voice:"まだバツの5問と同じ考え方の問題です。規則性は、表をつくって、1番目と2番目を式に入れて確かめる。放物線は、長さを、エーを使って表して、方程式にする。証明は、文字で置いて、結論まで書く。",
+  points:["<b>規則性</b>：表をつくる → 式を予想 → n=1, 2 を入れて確かめる。","<b>放物線と長さ</b>：A(a, ○)の○を式で書き、AB・ACを a で表して方程式に。a&gt;0 を忘れない。","<b>文字式の証明</b>：「nを整数とすると」→ 式 → 計算 → 「○×(整数)だから○の倍数」まで。","<b>円すい台</b>：大きい円すい − 小さい円すい。高さも相似比で出す。","<b>2次方程式</b>：まず全体を割る。"],
+  items:[
+  { id:"ws-1", q:"1番目3個、2番目8個、3番目15個…と並ぶ。n番目の個数を n の式で。", a:["n²+2n"], m:"ai", rule:"n²+2n と同じ式なら正解（n(n+2) も可）。", exp:"表：3, 8, 15 → n=1で3、n=2で8 を確かめる。n²+2n。" },
+  { id:"ws-2", q:"1番目2個、2番目6個、3番目12個…と並ぶ。n番目の個数を n の式で。", a:["n²+n"], m:"ai", rule:"n²+n と同じ式なら正解（n(n+1) も可）。", exp:"1×2, 2×3, 3×4 → n(n+1)。" },
+  { id:"ws-3", q:"n番目のもようで、白が2n個、黒が n²個。10番目の白と黒の合計は？", a:["120"], m:"exact", hint:"数字", exp:"100+20=120。" },
+  { id:"ws-4", q:"y=¼x² 上の点A（x座標 a、a&gt;0）、Aと y軸について対称な点B、Aから x軸へ下ろした点C。AB=AC のとき a は？", a:["8"], m:"exact", hint:"数字", exp:"AB=2a、AC=a²/4 → 2a=a²/4 → a²=8a → a=8（a&gt;0）。" },
+  { id:"ws-5", q:"（同じ形で）y=2x² のとき、AB=AC となる a は？", a:["1"], m:"exact", hint:"数字", exp:"2a=2a² → a=1。" },
+  { id:"ws-6", q:"（同じ形で）y=½x² のとき、AB=2AC となる a は？", a:["2"], m:"exact", hint:"数字", exp:"2a=2×½a² → a=2。" },
+  { id:"ws-7", q:"「連続する2つの奇数の和は4の倍数」を証明しよう。", a:["証明"], m:"ai", big:true, rule:"nを整数として 2n−1, 2n+1（または 2n+1, 2n+3）と置き、和を 4×(整数) の形にして4の倍数と結論していれば正解。", exp:"(2n−1)+(2n+1)=4n。nは整数なので4nは4の倍数。" },
+  { id:"ws-8", q:"「連続する3つの偶数の和は6の倍数」を証明しよう。", a:["証明"], m:"ai", big:true, rule:"2n, 2n+2, 2n+4 と置き、和を 6(n+1) にして6の倍数と結論していれば正解。", exp:"2n+(2n+2)+(2n+4)=6n+6=6(n+1)。" },
+  { id:"ws-9", q:"「2けたの自然数と、その十の位と一の位を入れかえた数の和は11の倍数」を証明しよう。", a:["証明"], m:"ai", big:true, rule:"10a+b と 10b+a と置き、和を 11(a+b) にして11の倍数と結論していれば正解。", exp:"(10a+b)+(10b+a)=11a+11b=11(a+b)。" },
+  { id:"ws-10", q:"直角三角形の合同条件を2つ書こう。", a:["斜辺と1つの鋭角がそれぞれ等しい・斜辺と他の1辺がそれぞれ等しい"], m:"ai", big:true, rule:"「斜辺と1つの鋭角がそれぞれ等しい」と「斜辺と他の1辺がそれぞれ等しい」の両方があれば正解。", exp:"問題7(2)の証明は「斜辺と1つの鋭角」を使う。" },
+  { id:"ws-11", q:"底面の半径4cm、高さ6cmの円すいを、頂点から3cmのところで底面に平行に切った。下側（円すい台）の体積は？", a:["28π"], m:"ai", rule:"28π なら正解。", exp:"小さい円すいは半径2・高さ3。1/3π(16×6 − 4×3)=28π。" },
+  { id:"ws-12", q:"底面の半径6cm、高さ9cmの円すいを、頂点から6cmのところで底面に平行に切った。下側の体積は？", a:["76π"], m:"ai", rule:"76π なら正解。", exp:"小さい円すいは半径4・高さ6。1/3π(36×9 − 16×6)=76π。" },
+  { id:"ws-13", q:"3x² + 3x − 6 = 0 を解こう。", a:["x=1,-2"], m:"ai", rule:"x=1 と x=−2 の両方で正解。", exp:"÷3 → x²+x−2=0 → (x+2)(x−1)=0。" },
+  { id:"ws-14", q:"4x² − 8x − 12 = 0 を解こう。", a:["x=3,-1"], m:"ai", rule:"x=3 と x=−1 の両方で正解。", exp:"÷4 → x²−2x−3=0 → (x−3)(x+1)=0。" }
+  ]},
+
+{ id:"we1", day:"wed", slot:0, subj:"sugaku", type:"explain", min:20, title:"③ 説明タイム（数学）やり直し",
+  lead:"月曜・火曜で説明できなかった数学。おうちの人に説明しよう。聞く人は、言えたポイントにチェック。",
+  items:[
+  { id:"we1-1", ref:"数学 問題1(6)", q:"2次方程式 2x²+2x−4=0 の解き方", pts:["まず両辺を2で割る","x²+x−2=0 を因数分解する","(x+2)(x−1)=0 → x=1, −2"] },
+  { id:"we1-2", ref:"数学 問題3(2)", q:"平行四辺形の ∠ABC の求め方", pts:["AD∥BC なので錯角が等しい（50°）","二等分線なので ∠BCD は2倍の100°","となり合う角の和は180° → 80°"] },
+  { id:"we1-3", ref:"数学 問題3(3)①", q:"DE の長さの求め方", pts:["△ADE∽△ABC（DE∥BC）","AD:AB=6:18=1:3 と、対応する辺どうしで比をつくる","DE=9×1/3=3cm"] },
+  { id:"we1-4", ref:"数学 問題6", q:"連続する2つの奇数の積に1をたすと4の倍数になる証明", pts:["n を整数として、2n−1、2n+1 と置く","(2n−1)(2n+1)+1=4n²","n² は整数なので 4n² は4の倍数（結論を書く）"] },
+  { id:"we1-5", ref:"数学 問題7(1)", q:"△ABC∽△EDC の証明の書き方", pts:["△ABCと△EDCで","角は3文字で ∠BAC=∠DEC=90°","共通な角だから ∠ACB=∠ECD","2組の角がそれぞれ等しいので相似"] },
+  { id:"we1-6", ref:"数学 問題2(5)", q:"√(3n) が整数になる n の見つけ方", pts:["5<√n<6 を2乗して 25<n<36","3n が平方数（81）になればよい","n=27"] }
+  ]},
+
+{ id:"w-eigo", day:"wed", slot:1, subj:"eigo", type:"weak", min:5, title:"① 英語 まだ✕の問題", lead:"月曜・火曜でまちがえて、まだ直っていない英語の問題。〇になったら消えます。" },
+
+{ id:"w-rika", day:"wed", slot:1, subj:"rika", type:"weak", min:5, title:"① 理科 まだ✕の問題", lead:"月曜・火曜でまちがえて、まだ直っていない理科の問題。〇になったら消えます。" },
+
+{ id:"we-e", day:"wed", slot:1, subj:"eigo", type:"drill", min:17, title:"④ 英語の類似問題（間接疑問・過去分詞）",
+  voice:"間接疑問は、ドゥユーノウのあとを、疑問詞、主語、動詞の順に。ダズやディッドは消えて、動詞の形が変わる。名詞のあとの過去分詞は、された、という意味。",
+  points:["<b>間接疑問</b>：Do you know ＋ 疑問詞 ＋ 主語 ＋ 動詞？　does / did は消えて、動詞が wants / went のように変わる。","<b>名詞＋過去分詞</b>：a language spoken in many countries（話されている言語）。"],
+  items:[
+  { id:"we-e1", q:"並べかえて全文を：( know / what / you / do / color / she / likes )?", a:["Do you know what color she likes?"], m:"ai", rule:"Do you know what color she likes? と同じ語順なら正解。", exp:"what color＋she＋likes。" },
+  { id:"we-e2", q:"並べかえて全文を：( tell / me / where / you / can / lives / he )?", a:["Can you tell me where he lives?"], m:"ai", rule:"Can you tell me where he lives? と同じ語順なら正解。", exp:"where＋he＋lives。" },
+  { id:"we-e3", q:"並べかえて全文を：( know / when / I / don't / started / the movie ).", a:["I don't know when the movie started."], m:"ai", rule:"I don't know when the movie started. と同じ語順なら正解。", exp:"when＋the movie＋started。" },
+  { id:"we-e4", q:"並べかえて全文を：( what / do / remember / you / said / Ms. Green )?", a:["Do you remember what Ms. Green said?"], m:"ai", rule:"Do you remember what Ms. Green said? と同じ語順なら正解。", exp:"what＋Ms. Green＋said。" },
+  { id:"we-e5", q:"What does Ken want? を「あなたは知っていますか」の文に書きかえよう。", a:["Do you know what Ken wants?"], m:"ai", rule:"Do you know what Ken wants? なら正解。want に s がなければ不正解。", exp:"does が消えて wants になる。" },
+  { id:"we-e6", q:"Where did they go? を「わたしは知らない」の文に書きかえよう。", a:["I don't know where they went."], m:"ai", rule:"I don't know where they went. なら正解。", exp:"did が消えて went（過去形）になる。" },
+  { id:"we-e7", q:"( )に1語（speak を変えて）：English is a language ( ) in many countries.", a:["spoken"], m:"exact", hint:"英単語", exp:"spoken＝話されている。" },
+  { id:"we-e8", q:"( )に1語（make を変えて）：This is a cake ( ) by my mother.", a:["made"], m:"exact", hint:"英単語", exp:"made＝作られた。" },
+  { id:"we-e9", q:"( )に1語（sell を変えて）：These are T-shirts ( ) at that shop.", a:["sold"], m:"exact", hint:"英単語", exp:"sold＝売られている。" },
+  { id:"we-e10", q:"( )に1語（build を変えて）：That is a temple ( ) 500 years ago.", a:["built"], m:"exact", hint:"英単語", exp:"built＝建てられた。" }
+  ]},
+
+{ id:"we-r", day:"wed", slot:1, subj:"rika", type:"drill", min:8, title:"④ 理科の類似問題（雲のでき方・目と耳）",
+  points:["<b>雲</b>：上昇 → 上空は気圧が低い → 膨張 → 温度が下がる → 露点 → 水滴。押すと逆（温度が上がり水滴が水蒸気に）。","<b>目</b>：虹彩＝光の量、レンズ＝ピント、網膜＝光を受けとる。<b>耳</b>：鼓膜＝ふるえる、うずまき管＝受けとる。"],
+  items:[
+  { id:"we-r1", q:"ピストンを引くとフラスコ内が白くくもる理由（「気圧が下がるので、」に続けて）", a:["空気が膨張して温度が下がり、露点以下になって水蒸気が水滴になるから"], m:"ai", rule:"「膨張して温度が下がる」と「水蒸気が水滴になる（露点）」の両方があれば正解。", exp:"押すときはこの逆。" },
+  { id:"we-r2", q:"上昇した空気が膨張するのは、上空の何が低いから？（漢字2字）", a:["気圧"], m:"exact", hint:"漢字" },
+  { id:"we-r3", q:"目で、ひとみの大きさを変えて光の量を調節する部分（漢字）", a:["虹彩"], m:"exact", hint:"漢字", exp:"虹彩（こうさい）。" },
+  { id:"we-r4", q:"目で、厚さを変えてピントを合わせる部分", a:["レンズ"], m:"ai", rule:"レンズ（水晶体）なら正解。" },
+  { id:"we-r5", q:"耳で、音をとらえて振動する膜（漢字）", a:["鼓膜"], m:"exact", hint:"漢字", exp:"鼓膜（こまく）。" },
+  { id:"we-r6", q:"刺激を受けとる器官を何という？（漢字4字）", a:["感覚器官"], m:"exact", hint:"漢字" }
+  ]},
+
+{ id:"we2", day:"wed", slot:1, subj:"mix", type:"explain", min:15, title:"③ 説明タイム（理科・英語・社会）やり直し",
+  lead:"説明できなかった4つ。おうちの人に説明しよう。",
+  items:[
+  { id:"we2-1", ref:"理科 問題3", q:"地層の重なり方と、海の深さの変化", pts:["粒の大きい（重い）れきから先に沈む","下の層ほど古い","下から泥→砂→れきなら海が浅くなった"] },
+  { id:"we2-2", ref:"理科 問題8", q:"記録テープから速さを出す方法", pts:["1秒60打点なので6打点は0.1秒","速さ＝距離÷時間","9.1cm÷0.1秒=91cm/s"] },
+  { id:"we2-3", ref:"英語 問題5(4)", q:"Do you know what sport Seiya plays? の語順のルール", pts:["Do you know で始める","後ろは 疑問詞＋主語＋動詞","does は使わず plays の s が残る"] },
+  { id:"we2-4", ref:"社会 問題1(2)", q:"自由権と社会権のちがい", pts:["自由権＝国から自由をうばわれない権利（表現・身体・経済）","社会権＝人間らしい生活を国に保障してもらう権利（生存権・教育）","教育を受ける権利は社会権"] }
+  ]},
+
+{ id:"wk", day:"wed", slot:1, subj:"kokugo", type:"drill", min:10, title:"漢字の書き取り（テストは4問全滅）", voice:"漢字は、とめ、はね、はらいまで、ていねいに。",
   lead:"テストの漢字の書き取りは4問とも✕でした。1問40秒で、ていねいに速く。",
   items:[
   { id:"wk-1", q:"漢字で書こう：新しいやり方に【イコウ】する。", a:["移行"], m:"exact", hint:"漢字", exp:"移行" },
@@ -789,7 +862,7 @@ const BLOCKS = [
   { id:"wk-15", q:"漢字で書こう：知識が【ホウフ】だ。", a:["豊富"], m:"exact", hint:"漢字", exp:"豊富" }
   ]},
 
-{ id:"t7", day:"wed", slot:null, subj:"eigo", type:"drill", min:40, title:"英語を書く（問題4・英作文）", voice:"ポイントは3つ。英作文は白紙がゼロ点、3文書けば点になる。答え、理由、気持ちの順に書こう。会話の空所は、前後の文から、だれ、何時、何に興味、を決める。",
+{ id:"t7", day:"wed", slot:null, subj:"eigo", type:"drill", min:40, title:"＋ 英語を書く（問題4・英作文）", voice:"ポイントは3つ。英作文は白紙がゼロ点、3文書けば点になる。答え、理由、気持ちの順に書こう。会話の空所は、前後の文から、だれ、何時、何に興味、を決める。",
   points:[
     "<b>英作文は白紙が0点、3文書けば点になる。</b>型：①答え → ②理由・具体例 → ③気持ち。",
     "使える文：I like to 〜. / I often 〜 with 人. / because 〜. / It makes me happy. / I want to 〜.",
@@ -804,7 +877,7 @@ const BLOCKS = [
   { id:"t7-6", q:"英作文（3文以上）：Which do you like better, summer or winter?", a:["自由英作文"], m:"ai", big:true, rule:"英語3文以上で、どちらかを選び理由があり、全体で15語以上なら正解。文法ミスが3つ以上あれば不正解。", exp:"例：I like summer better. I can swim in the sea. I also like shaved ice." }
   ]},
 
-{ id:"t8", day:"wed", slot:null, subj:"kokugo", type:"drill", min:60, title:"国語 記述の型と作文", voice:"ポイントは4つ。理由を聞かれたら、からで終わる。字数は最低字数を必ずこえる。答えは本文の中にある。傍線の前後や、それは、のあとを探す。作文は2段落。1段落目に立場と理由、2段落目に反対の意見と、それへの反論。",
+{ id:"t8", day:"wed", slot:null, subj:"kokugo", type:"drill", min:60, title:"＋ 国語 記述の型と作文", voice:"ポイントは4つ。理由を聞かれたら、からで終わる。字数は最低字数を必ずこえる。答えは本文の中にある。傍線の前後や、それは、のあとを探す。作文は2段落。1段落目に立場と理由、2段落目に反対の意見と、それへの反論。",
   points:[
     "<b>理由を聞かれたら「〜から。」で終わる</b>。字数指定（〜字以上〜字以内）は最低字数を必ずこえる。",
     "<b>答えは本文の中</b>。傍線部の前後・「それは」「つまり」の後ろを探して、ことばを借りてまとめる。",
@@ -815,17 +888,7 @@ const BLOCKS = [
   { id:"t8-1", q:"次の文を読んで答えよう。<br>〈ゆうたは毎朝、だれよりも早く教室に来て窓を開ける。去年、かぜで休む人が多かったとき、先生が「空気を入れかえると、かぜがうつりにくくなる」と話したのを覚えていたからだ。〉<br>ゆうたが毎朝窓を開けるのはなぜか。20〜30字・「〜から」で。", a:["空気を入れかえると、かぜがうつりにくくなると先生から聞いたから"], m:"ai", big:true, rule:"「空気を入れかえるとかぜがうつりにくくなる（と先生が話した・覚えていた）」内容があり、文末が「から」、20〜30字程度なら正解。", exp:"理由は「〜からだ」の文にある。本文のことばを借りてまとめる。" },
   { id:"t8-2", q:"次の文を読んで答えよう。<br>〈祖母の畑では、毎年同じ場所に同じ野菜を植えない。同じ野菜を続けて育てると、土の中の養分がかたより、病気も出やすくなるからだ。祖母はノートに、どこに何を植えたかを書きとめている。〉<br>祖母がノートに記録をつけているのは何のためか。「〜ため」で20字程度。", a:["毎年同じ場所に同じ野菜を植えないようにするため"], m:"ai", big:true, rule:"「同じ場所に同じ野菜を植えない（続けて育てない）ようにする」内容で、文末が「ため」なら正解。", exp:"ノートの目的は、前の文の「同じ場所に同じ野菜を植えない」につながる。" },
   { id:"t8-3", ref:"国語 問題四", q:"作文（150字程度・2段落）：「中学校で、授業中にタブレットで調べものをする時間をもっと増やすべきだ」という意見に賛成か反対か。①段落に立場と理由、②段落に反対の立場の意見とそれへの反論。", a:["作文"], m:"ai", big:true, rule:"2段落で、1段落目に賛成か反対かの立場と理由、2段落目に反対の立場から予想される意見とそれへの反論がある。全体で120字以上。題名・氏名がない。これらを満たせば正解。", exp:"型：私は〜に賛成だ。理由は〜からだ。／確かに〜という意見もある。しかし〜。だから私は〜と考える。" }
-  ]},
-
-{ id:"w-sugaku", day:"wed", slot:null, subj:"sugaku", type:"weak", min:0, title:"数学の弱点補強", lead:"月曜・火曜でまちがえて、まだ直っていない数学の問題。〇になったら消えます。" },
-
-{ id:"w-rika", day:"wed", slot:null, subj:"rika", type:"weak", min:0, title:"理科の弱点補強", lead:"月曜・火曜でまちがえて、まだ直っていない理科の問題。〇になったら消えます。" },
-
-{ id:"w-eigo", day:"wed", slot:null, subj:"eigo", type:"weak", min:0, title:"英語の弱点補強", lead:"月曜・火曜でまちがえて、まだ直っていない英語の問題。〇になったら消えます。" },
-
-{ id:"w-shakai", day:"wed", slot:null, subj:"shakai", type:"weak", min:0, title:"社会の弱点補強", lead:"月曜・火曜でまちがえて、まだ直っていない社会の問題。〇になったら消えます。" },
-
-{ id:"w-kokugo", day:"wed", slot:null, subj:"kokugo", type:"weak", min:0, title:"国語の弱点補強", lead:"月曜・火曜でまちがえて、まだ直っていない国語の問題。〇になったら消えます。" }
+  ]}
 ];
 
 /* まだ解答用紙で確認できていない問題（①やり直しの追加候補）
@@ -864,11 +927,9 @@ function dayTotal(d){ return DAYS[d].slots.length*60; }
 
 function renderHome(){
   $("tabs").innerHTML = Object.keys(DAYS).map(d=>{
-    if(d==="wed") return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('wed')">${DAYS[d].label}<small>まだ✕ ${remaining().length}問</small></button>`;
     const bs=blocksOf(d).filter(b=>b.slot!=null), done=bs.filter(b=>store.blocks[b.id]?.done).length;
     return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('${d}')">${DAYS[d].label}<small>${dayTotal(d)/60}時間・${done}/${bs.length} 終了</small></button>`;
   }).join("");
-  if(store.day==="wed") return renderWed();
   const bs = blocksOf(store.day);
   const sched = bs.filter(b=>b.slot!=null);
   let doneMin=0, html="", fo=bs.indexOf(sched[firstOpen(sched)]);
@@ -883,7 +944,7 @@ function renderHome(){
     const label = st.done ? (st.score!=null ? `済 ${st.score}` : "済") : (i===fo ? "▶ つぎ" : "");
     return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
       <div class="tm"><b>${fmtClock(start)}〜</b>${b.min}分</div>
-      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}${b.type==="explain"?"　👪 おうちの人が聞く":""}</small></div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}${b.type==="weak"?`・まだ✕ ${remaining(it=>it._subj===b.subj).length}問`:""}${b.type==="explain"?"　👪 おうちの人が聞く":""}</small></div>
       <div class="st">${label}</div>
       <button class="btn sm ${st.done?"":"primary"}" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button>
     </div>`;
@@ -906,7 +967,7 @@ function renderHome(){
   $("modeNote").innerHTML = (apiKey()
     ? "採点：<b>AI採点</b>（手書き一問一答と同じ Gemini キーを使用）"
     : "採点：<b>自己採点</b>（⚙設定で Gemini APIキーを入れるとAI採点）")
-    + "<br>①は問題用紙を見ながら解きます。問題用紙の文章はこのアプリには入っていません。";
+    + "<br>図・グラフ・長い本文は問題用紙を見ます。このファイルは家庭内だけで使い、公開しないでください。";
 }
 function renderWed(){
   const SUBJS=["sugaku","rika","eigo","shakai","kokugo"];
@@ -941,7 +1002,7 @@ function startBlock(id){
   run = { b, t0:Date.now(), idx:0, queue:[], round:1, ok:0, n:0, phase:"intro" };
   if(b.type==="mix"||b.type==="weak") run.items = mixItems(b);
   else run.items = (b.items||[]).slice();
-  if(b.type==="weak"){ run.b = Object.assign({}, b, { min: Math.max(5, Math.ceil(run.items.length*1.2)) }); }
+  if(b.type==="weak" && !b.min){ run.b = Object.assign({}, b, { min: Math.max(5, Math.ceil(run.items.length*1.2)) }); }
   run.per = Math.max(15, Math.round(run.b.min*60/Math.max(1,run.items.length))); run.times=[]; run.qt0=null;
   $("home").classList.add("hidden"); $("run").classList.remove("hidden");
   document.documentElement.style.setProperty("--c", color(b.subj));
@@ -993,9 +1054,9 @@ function showIntro(){
   if(b.points) h += `<ul class="points">${b.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
   if(run.items.length && b.type!=="explain"){ const sec=Math.round(b.min*60/run.items.length);
     h += `<div class="hintbox">⏱ ${run.items.length}問を${b.min}分で。目安は<b>1問 ${sec>=60?Math.floor(sec/60)+"分"+(sec%60?sec%60+"秒":""):sec+"秒"}</b>。迷ったら書いて答え合わせ、止まらない。</div>`; }
-  if(b.type==="mix" && !run.items.length) h += `<div class="lead" style="margin-top:8px">まちがえた問題はありません！ このブロックは終わりにしてOK。</div>`;
+  if((b.type==="mix"||b.type==="weak") && !run.items.length) h += `<div class="lead" style="margin-top:8px">まちがえた問題はありません！ このブロックは終わりにしてOK。</div>`;
   h += `</div><div class="tools"><button class="btn" id="voiceBtn" onclick="toggleGuide()">🔊 もう一度聞く</button><div class="sp"></div>`;
-  h += (b.type==="mix" && !run.items.length)
+  h += ((b.type==="mix"||b.type==="weak") && !run.items.length)
     ? `<button class="btn primary" onclick="finishBlock(null)">終わる</button>`
     : `<button class="btn primary" onclick="nextItem()">${b.points?"ポイントを読んだ → 問題へ":"はじめる"}</button>`;
   $("stage").innerHTML = h + `</div>`;
