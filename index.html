@@ -511,7 +511,7 @@ for(const k in REDO) REDO[k].forEach(it=>{ if(STEMS[it.id]) it.q = (it.m==="self
 const DAYS = {
   mon: { label: "11/16（月）", slots: [["17:00","18:00"],["19:30","20:30"],["20:45","21:45"],["22:00","23:00"]] },
   tue: { label: "11/17（火）", slots: [["20:45","21:45"],["22:00","23:00"]] },
-  wed: { label: "11/18（水）", slots: [["20:45","21:45"],["22:00","23:00"]] }
+  wed: { label: "11/18（水）", slots: [["17:00","18:00"],["22:30","23:30"]] }
 };
 
 /* 教科の色は kijutsu250 と同じ */
@@ -950,7 +950,7 @@ function renderHome(){
     </div>`;
     }).join("");
     const next=DAYS[store.day].slots[si+1];
-    if(next){ const gap=toMin(next[0])-toMin(sl[1]); html += `<div class="gap">${gap>=60?"🍚 夕食・休けい":"☕ 休けい"}（${gap}分）${gap<60?"：立つ・水を飲む・顔を洗う。スマホは見ない。":""}</div>`; }
+    if(next){ const gap=toMin(next[0])-toMin(sl[1]); html += `<div class="gap">${gap>=180?"⏸ 休み":gap>=60?"🍚 夕食・休けい":"☕ 休けい"}（${gap}分）${gap<60?"：立つ・水を飲む・顔を洗う。スマホは見ない。":""}</div>`; }
   });
   const opt = bs.filter(b=>b.slot==null);
   if(opt.length){
