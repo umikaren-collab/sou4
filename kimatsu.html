@@ -184,7 +184,7 @@ const SUBS = [
   { id:"s-bi1", subj:"bijutsu",name:"点描画作品", due:"11/26（木）テスト当日締切" },
   { id:"s-en1", subj:"eigo",   name:"英語ノート後期（自分なりに工夫して作り上げる）", due:"11/27（金）13時まで" },
   { id:"s-ko1", subj:"kokugo", name:"国語学習ワーク p36、37、45〜51、64、65", due:"11/27（金）テスト後回収" },
-  { id:"s-ko2", subj:"kokugo", name:"暗唱カード", due:"11/27（金）テスト後回収" },
+  { id:"s-ko2", subj:"kokugo", name:"暗唱カード（学校の授業でやる）", due:"11/27（金）テスト後回収", preset:2, noimp:true },
   { id:"s-sh1", subj:"shakai", name:"3年の分析 P40〜65（P46、47は除く）", due:"11/27（金）※テストの日" },
   { id:"s-sh2", subj:"shakai", name:"社会の授業プリント", due:"11/27（金）※テストの日" },
   { id:"s-gk1", subj:"gika",   name:"家庭ノート（Classroomにノートの解答を添付）", due:"テスト終了後" },
@@ -1175,7 +1175,7 @@ const BLOCKS = [
   A("m11-25","ルネサンス以前（中世）の作品の特徴","平面的で、宗教的な決まりにそった表現","平面的・写実的でない の内容なら正解。","",[av("ルネサンスの三大巨匠は、ダ・ヴィンチ、ミケランジェロとだれ？","ラファエロ","ラファエロ なら正解。")])
   ]},
 { id:"m8", day:"mon", slot:8, subj:"eigo", type:"task", min:50, title:"📝 提出物：英語ノート後期（11/27 13時まで）", subs:["s-en1"], lead:"写真で見ると、後期 p7・p14〜21 の単語らん（英語のつづり）と下の練習欄がまだ空いています。そこから先に埋める。p55 の cloudless・extend のつづりも直しておく。終わったところまで自分で答え合わせをして、まちがえたページを写真にとり、ドライブの「kimatsu」→「答え合わせ」へ。" },
-{ id:"m9", day:"mon", slot:9, subj:"kokugo", type:"task", min:50, title:"📝 提出物：国語学習ワーク・暗唱カード", subs:["s-ko1","s-ko2"], lead:"写真で見ると、ワークの p36・45・48・64 などがまだ白紙です。日曜の国語③（ことわざ・文の組み立て）で解けるようにしてあるので、p36 から書きこむ。終わったところまで自分で答え合わせをして、まちがえたページを写真にとり、ドライブの「kimatsu」→「答え合わせ」へ。" },
+{ id:"m9", day:"mon", slot:9, subj:"kokugo", type:"task", min:50, title:"📝 提出物：国語学習ワーク", subs:["s-ko1"], lead:"写真で見ると、ワークの p36・45・48・64 などがまだ白紙です。日曜の国語③（ことわざ・文の組み立て）で解けるようにしてあるので、p36 から書きこむ。終わったところまで自分で答え合わせをして、まちがえたページを写真にとり、ドライブの「kimatsu」→「答え合わせ」へ。" },
 { id:"m12", day:"mon", slot:12, subj:"mix", type:"weak-all", min:60, title:"弱点（まだ✕と提出物のまちがい直し）" },
 
 /* ===================== 弱点（まだ✕の問題を類似問題で） ===================== */
@@ -1190,7 +1190,7 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 0:40", note:"公民の写真を全部読んで、日曜15時を「3年の分析のまちがい直し（46問）」に入れかえ" };
+const DATAVER = { at:"11/22 0:50", note:"暗唱カードは学校でやるので完了扱い" };
 
 </script>
 <script>
@@ -1199,7 +1199,7 @@ const DATAVER = { at:"11/22 0:40", note:"公民の写真を全部読んで、日
    ============================================================ */
 const STORE_KEY = "sou4-kimatsu-2026-11";
 let store = { key:"", model:"gemini-flash-latest", res:{}, blocks:{}, explain:{}, sub:{}, imp:{}, revs:[], day:"fri" };
-function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"null"); if(s) store=Object.assign(store,s); }catch(e){} store.imp=store.imp||{}; store.revs=store.revs||[]; }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"null"); if(s) store=Object.assign(store,s); }catch(e){} store.imp=store.imp||{}; store.revs=store.revs||[]; SUBS.forEach(x=>{ if(x.preset!=null && store.sub[x.id]==null) store.sub[x.id]=x.preset; }); }
 function revBlocks(){ return SUBREV.concat(store.revs||[]); }
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
 /* APIキーは、同じサイトの手書き一問一答（kijutsu250）で入れたものを使う */
@@ -1324,7 +1324,7 @@ function renderSub(){
       : last ? `<div class="imp ok">✅ 取り込み完了 ${last.at}　${last.wrong?`まちがい ${last.wrong}問 → 弱点へ`:"まちがいなし"}${im.length>1?`（${im.length}回分）`:""}${last.note?`<br><small>${esc(last.note)}</small>`:""}</div>` : "";
     html+=`<div class="subrow" style="--c:${color(sj)}"><div class="nm"><b>${SUBJ[sj]}</b>　${x.name}<small>提出：${x.due}</small>${stat}</div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${SUBST.map((t,k)=>`<button class="stbtn ${v===k?"on":""}" onclick="setSub('${x.id}',${k})">${t}</button>`).join("")}
-      <button class="btn sm ${last?"":"primary"}" style="width:100%;margin-top:2px" ${impBusy[x.id]?"disabled":""} onclick="pickImport('${x.id}')">${last?"📸 追加で取り込み":"📸 取り込み"}</button></div></div>`; }));
+      ${x.noimp?"":`<button class="btn sm ${last?"":"primary"}" style="width:100%;margin-top:2px" ${impBusy[x.id]?"disabled":""} onclick="pickImport('${x.id}')">${last?"📸 追加で取り込み":"📸 取り込み"}</button>`}</div></div>`; }));
   html+=importHtml();
   $("blockList").innerHTML=html; $("dayBar").style.width=Math.round(SUBS.filter(x=>(store.sub[x.id]||0)>=2).length/SUBS.length*100)+"%";
   $("modeNote").innerHTML="状態は分析ファイルにも入ります。";
