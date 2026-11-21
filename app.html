@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>期末テスト対策</title>
+<style>
+:root{
+  --bg:#f4f1ea; --card:#fffdf8; --ink:#1f2a33; --sub:#6b7680; --line:#ddd6c8;
+  --accent:#1f6f78; --ok:#2e8b57; --ng:#c0392b; --warn:#b7791f;
+  --kokugo:#b5473a; --sugaku:#2f6db5; --eigo:#7a4fb0; --shakai:#3d8b4f; --rika:#c47a1c; --mix:#1f6f78; --ongaku:#c2477f; --bijutsu:#8a5a2b; --hotai:#2a8f8f; --gika:#5b6b2f; --rest:#8a939b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;-webkit-user-select:none;user-select:none}
+button{font-family:inherit;cursor:pointer;border:none}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+h1{font-size:21px;letter-spacing:.03em}
+.btn{padding:11px 16px;border-radius:10px;font-size:16px;font-weight:700;background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.ng{background:var(--ng);color:#fff;border-color:var(--ng)}
+.btn.sm{padding:7px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.hidden{display:none!important}
+.tabs{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tab{flex:1;min-width:120px;padding:10px;border-radius:12px;background:var(--card);border:2px solid var(--line);font-size:17px;font-weight:700}
+.tab.on{border-color:var(--accent);color:var(--accent)}
+.tab small{display:block;font-size:13px;color:var(--sub);font-weight:400}
+.daybar{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin:4px 0 14px}
+.daybar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.blk{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:7px solid var(--c);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.blk .tm{font-size:13px;color:var(--sub);min-width:84px;line-height:1.4}
+.blk .tm b{display:block;font-size:15px;color:var(--ink)}
+.blk .tt{flex:1;font-size:16px;font-weight:700;line-height:1.45}
+.blk .tt small{display:block;font-size:13px;color:var(--sub);font-weight:400}
+.blk .st{font-size:14px;font-weight:700;min-width:64px;text-align:right}
+.blk.done{opacity:.72}
+.blk.done .st{color:var(--ok)}
+.qpace{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:-4px 0 10px}
+.qpace i{display:block;height:100%;width:0;background:var(--ok);transition:width 1s linear,background .3s}
+.qpace i.warn{background:var(--warn)} .qpace i.over{background:var(--ng)}
+.pace{font-size:13px;font-weight:700;min-width:96px;text-align:right}
+.pace.ahead{color:var(--ok)} .pace.behind{color:var(--ng)}
+.count{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.count div{background:var(--card);border-radius:10px;padding:6px 10px;font-size:13px;border:1px solid var(--line)}
+.count b{font-size:16px}
+.subrow{display:flex;gap:10px;align-items:center;background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:8px;border-left:7px solid var(--c)}
+.subrow{flex-wrap:wrap} .subrow .nm{flex:1 1 260px;font-size:15px;line-height:1.5} .subrow .nm small{display:block;color:var(--sub);font-size:12px}
+.imp{margin-top:4px;font-size:13px;font-weight:700;border-radius:8px;padding:4px 8px;display:inline-block} .imp.ok{background:#e3f4e8;color:#1e6b3a} .imp.err{background:#fde8e8;color:#9b1c1c} .imp.busy{background:#eef3f7;color:var(--accent)}
+.stbtn{padding:6px 8px;border-radius:8px;font-size:12px;font-weight:700;border:2px solid var(--line);background:#fff}
+.stbtn.on{background:var(--c);color:#fff;border-color:var(--c)}
+.slothead{font-size:15px;font-weight:800;color:var(--accent);margin:14px 2px 6px}
+.gap{font-size:13px;color:var(--sub);text-align:center;margin:8px 0;padding:6px;border:1px dashed var(--line);border-radius:10px}
+canvas#pad.big{height:560px}
+.note{margin-top:14px;font-size:13px;color:var(--sub);line-height:1.7}
+/* run */
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tag{padding:4px 12px;border-radius:999px;color:#fff;font-weight:700;font-size:14px;background:var(--c);white-space:nowrap}
+.prog{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--c);transition:width .3s}
+.qcount{font-weight:700;font-size:15px;min-width:52px;text-align:right}
+.clock{font-weight:700;font-size:15px;color:var(--sub);min-width:92px;text-align:right}
+.clock.over{color:var(--ng)}
+.card{background:var(--card);border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.ref{display:inline-block;font-size:13px;font-weight:700;color:var(--c);border:2px solid var(--c);border-radius:8px;padding:1px 8px;margin-bottom:8px}
+.qtext{font-size:21px;line-height:1.65;font-weight:600;user-select:text;-webkit-user-select:text}
+.lead{font-size:16px;line-height:1.7}
+.points li{margin:8px 0 8px 1.2em;font-size:17px;line-height:1.65}
+.hintbox{margin-top:10px;padding:10px 12px;background:#fff7e6;border-radius:10px;font-size:16px;line-height:1.6}
+.padwrap{position:relative;background:#fff;border-radius:14px;border:2px solid var(--line);overflow:hidden}
+canvas#pad{display:block;width:100%;height:300px;touch-action:none;background:repeating-linear-gradient(#fff 0 74px,#e9eef2 74px 76px)}
+.padhint{position:absolute;left:14px;top:10px;font-size:13px;color:#a9b2ba;pointer-events:none}
+.tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.tools .sp{flex:1}
+.res{background:var(--card);border-radius:14px;padding:14px 18px;margin-top:10px;border-left:8px solid var(--line)}
+.res.ok{border-left-color:var(--ok)} .res.ng{border-left-color:var(--ng)}
+.res .mark{font-size:28px;font-weight:900;margin-right:8px}
+.res.ok .mark{color:var(--ok)} .res.ng .mark{color:var(--ng)}
+.res .row{font-size:17px;margin-top:6px;line-height:1.65}
+.res .row b{color:var(--sub);font-weight:600;font-size:14px;margin-right:6px}
+.res .fix{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.pts label{display:flex;gap:12px;align-items:flex-start;font-size:18px;line-height:1.6;padding:10px 4px;border-bottom:1px dashed var(--line)}
+.pts input{width:26px;height:26px;margin-top:3px;flex:none}
+.big{font-size:56px;font-weight:900;color:var(--c);text-align:center;margin:8px 0}
+.say{display:flex;gap:10px;align-items:center;margin-top:8px}
+.listenbtn{font-size:22px;padding:14px 22px}
+table.sum{width:100%;border-collapse:collapse;font-size:15px}
+table.sum td,table.sum th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal .card{max-width:640px;width:100%}
+.modal label{display:block;margin:10px 0;font-size:15px}
+.modal input[type=text]{width:100%;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:8px;margin-top:4px}
+@media (max-width:640px){.qtext{font-size:18px}canvas#pad{height:240px}.blk .tm{min-width:70px}}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME ===== -->
+<input type="file" id="impFile" accept="image/*,application/pdf" multiple style="display:none" onchange="doImport()">
+<div id="home" class="wrap">
+  <header>
+    <h1>2学期期末テスト対策</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm" onclick="openSummary()">📖 記録</button>
+      <button class="btn sm" onclick="openSettings()">⚙ 設定</button>
+    </div>
+  </header>
+  <div id="verLine" style="font-size:13px;color:var(--sub);margin:-4px 2px 8px"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="countBox"></div>
+  <div class="daybar"><i id="dayBar"></i></div>
+  <div id="blockList"></div>
+  <div class="note" id="modeNote"></div>
+</div>
+
+<!-- ===== RUN ===== -->
+<div id="run" class="wrap hidden">
+  <div class="qtop">
+    <button class="btn sm" onclick="quitBlock()">✕</button>
+    <span class="tag" id="rTag"></span>
+    <div class="prog"><i id="rProg"></i></div>
+    <span class="qcount" id="rCount"></span>
+    <span class="pace" id="rPace"></span>
+    <span class="clock" id="rClock"></span>
+  </div>
+  <div class="qpace" id="qPace"><i id="qPaceBar"></i></div>
+  <div id="stage"></div>
+  <div id="padArea" class="hidden">
+  <div class="padwrap"><canvas id="pad"></canvas><div class="padhint" id="padHint">ここに答えを書こう</div></div>
+  <div class="tools">
+    <button class="btn" onclick="undo()">↶ 1画もどす</button>
+    <button class="btn" onclick="clearPad()">🗑 全部消す</button>
+    <div class="sp"></div>
+    <button class="btn primary" id="gradeBtn" onclick="onGrade()">答え合わせ</button>
+  </div>
+  </div>
+  <div id="resBox"></div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="card" id="modalBody"></div></div>
+
+<script src="data.js"></script>
+<script>
+/* ============================================================
+   保存
+   ============================================================ */
+const STORE_KEY = "sou4-kimatsu-2026-11";
+let store = { key:"", model:"gemini-flash-latest", res:{}, blocks:{}, explain:{}, sub:{}, imp:{}, revs:[], day:"fri" };
+function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"null"); if(s) store=Object.assign(store,s); }catch(e){} store.imp=store.imp||{}; store.revs=store.revs||[]; SUBS.forEach(x=>{ if(x.preset!=null && store.sub[x.id]==null) store.sub[x.id]=x.preset; }); }
+function revBlocks(){ return SUBREV.concat(store.revs||[]); }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
+/* APIキーは、同じサイトの手書き一問一答（kijutsu250）で入れたものを使う */
+function apiKey(){
+  if(store.key) return store.key;
+  try{ const k=JSON.parse(localStorage.getItem("kijutsu250_v1")||"null"); if(k&&k.key) return k.key; }catch(e){}
+  return "";
+}
+function modelName(){
+  if(store.model) return store.model;
+  return "gemini-flash-latest";
+}
+load();
+
+/* ============================================================
+   ホーム
+   ============================================================ */
+const $ = id => document.getElementById(id);
+function color(s){ return `var(--${s})`; }
+function blocksOf(day){ return BLOCKS.filter(b=>b.day===day).sort((a,b)=>(a.slot??99)-(b.slot??99)); }
+function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+function fmtClock(min){ const h=Math.floor(min/60), m=min%60; return `${h}:${String(m).padStart(2,"0")}`; }
+function dayTotal(d){ return DAYS[d].slots.reduce((a,s)=>a+toMin(s[1])-toMin(s[0]),0); }
+
+function renderHome(){
+  $("tabs").innerHTML = Object.keys(DAYS).map(d=>{
+    const bs=blocksOf(d).filter(b=>b.slot!=null), done=bs.filter(b=>store.blocks[b.id]?.done).length;
+    return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('${d}')">${DAYS[d].label}<small>${bs.length}コマ・${done} 終了</small></button>`;
+  }).join("") + `<button class="tab ${store.day==="weak"?"on":""}" onclick="pickDay('weak')">弱点<small>まだ✕ ${remaining().length}問</small></button>`
+    + `<button class="tab ${store.day==="sub"?"on":""}" onclick="pickDay('sub')">提出物<small>完了 ${SUBS.filter(x=>(store.sub[x.id]||0)>=2).length}/${SUBS.length}</small></button>`;
+  renderCount();
+  if(store.day==="weak") return renderWeak();
+  if(store.day==="sub") return renderSub();
+  const bs = blocksOf(store.day);
+  const sched = bs.filter(b=>b.slot!=null);
+  let doneMin=0, html="", fo=bs.indexOf(sched[firstOpen(sched)]);
+  DAYS[store.day].slots.forEach((sl,si)=>{
+    const inSlot = bs.filter(b=>b.slot===si);
+    html += `<div class="slothead">${sl[0]}〜${sl[1]}</div>`;
+    let t=toMin(sl[0]);
+    html += inSlot.map(b=>{
+    const i=bs.indexOf(b);
+    const st = store.blocks[b.id]||{};
+    const start=t; t+=b.min; if(st.done) doneMin+=b.min;
+    const label = st.done ? (st.score!=null ? `済 ${st.score}` : "済") : (i===fo ? "▶ つぎ" : "");
+    return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
+      <div class="tm"><b>${fmtClock(start)}〜</b>${b.min}分</div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}${b.type==="weak"?`・まだ✕ ${remaining(it=>it._subj===b.subj).length}問`:""}${b.type==="explain"?"　👪 おうちの人が聞く":""}${b.type==="task"&&b.subs&&b.subs.length?"　"+b.subs.map(id=>SUBST[store.sub[id]||0]).join("・"):""}${b.type==="weak-all"?`・まだ✕ ${remaining().length}問`:""}</small></div>
+      <div class="st">${label}</div>
+      <button class="btn sm ${st.done?"":"primary"}" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button>
+    </div>`;
+    }).join("");
+    const next=DAYS[store.day].slots[si+1];
+    if(next){ const gap=toMin(next[0])-toMin(sl[1]); if(gap>0) html += `<div class="gap">${gap>=180?(toMin(next[0])>=toMin("22:00")?"🍚 夕食・風呂・塾":"⏸ 休み"):gap>=60?(toMin(next[0])<=toMin("14:00")?"🍙 昼食・休けい":"🍚 夕食・風呂・休けい"):"☕ 休けい"}（${gap}分）${gap<60?"：立つ・水を飲む・顔を洗う。スマホは見ない。":""}</div>`; }
+  });
+  const opt = bs.filter(b=>b.slot==null);
+  if(opt.length){
+    html += `<div class="slothead" style="color:var(--sub)">＋ 時間があれば（予定外・やらなくてもOK）</div>`;
+    html += opt.map(b=>{ const st=store.blocks[b.id]||{};
+      return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
+      <div class="tm"><b>任意</b>${b.min}分</div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}</small></div>
+      <div class="st">${st.done?(st.score?`済 ${st.score}`:"済"):""}</div>
+      <button class="btn sm" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button></div>`; }).join("");
+  }
+  $("blockList").innerHTML = html;
+  $("dayBar").style.width = Math.round(doneMin/dayTotal(store.day)*100)+"%";
+  $("modeNote").innerHTML = (apiKey()
+    ? "採点：<b>AI採点</b>（手書き一問一答と同じ Gemini キーを使用）"
+    : "採点：<b>自己採点</b>（⚙設定で Gemini APIキーを入れるとAI採点）")
+    + "<br>図・グラフ・長い本文は問題用紙を見ます。このファイルは家庭内だけで使い、公開しないでください。";
+}
+function impCount(){ return Object.values(store.imp||{}).reduce((s,x)=>s+x.length,0); }
+function renderCount(){ try{ $("verLine").textContent="アプリ："+DATAVER.at+" 版　答え合わせの取り込み "+impCount()+"件"; }catch(e){}
+  const t0=new Date(); t0.setHours(0,0,0,0);
+  const days=[["11/25（水）",new Date(2026,10,25)],["11/26（木）",new Date(2026,10,26)],["11/27（金）",new Date(2026,10,27)]];
+  let h=`<div class="count">`;
+  TEST.forEach(([lab,subs],i)=>{ const n=Math.round((days[i][1]-t0)/864e5);
+    h+=`<div>${lab} <b>あと${n}日</b>　${subs.map(x=>SUBJ[x]).join("・")}</div>`; });
+  $("countBox").innerHTML=h+`</div>`;
+}
+function renderWeak(){
+  const SJ=["sugaku","rika","eigo","kokugo","shakai"];
+  const rem=remaining(); const un=rem.filter(it=>store.res[it.id].untried).length;
+  let html=`<div class="card"><div style="font-size:18px;font-weight:800">弱点（できるまで類似問題）</div>
+    <div class="lead">まちがえた問題と、時間内に解けなかった問題が集まります。<b>今 ${rem.length}問</b>（うち時間切れ ${un}問）。<br>
+    まちがえた問題は、数字や聞き方を変えた<b>類似問題</b>で出ます。正解すると消えます。</div></div>`;
+  SJ.forEach(sj=>{
+    const n=rem.filter(it=>it._subj===sj).length; const b=BLOCKS.find(x=>x.id==="w-"+sj); if(!b) return;
+    html+=`<div class="blk" style="--c:${color(sj)}"><div class="tm"><b>${n}問</b>目安${Math.ceil(n*1.2)}分</div>
+      <div class="tt">${b.title}<small>まだ✕・時間切れの問題</small></div><div class="st"></div>
+      <button class="btn sm ${n?"primary":""}" ${n?"":"disabled"} onclick="startBlock('w-${sj}')">はじめる</button></div>`;
+  });
+  html+=importHtml();
+  if(revBlocks().length){
+    html+=`<div class="slothead">📸 提出物のまちがい直し</div>`;
+    revBlocks().forEach(b=>{ const st=store.blocks[b.id]||{};
+      html+=`<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}"><div class="tm"><b>${b.items.length}問</b>目安${b.min}分</div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}</small></div><div class="st">${st.done?(st.score?`済 ${st.score}`:"済"):""}</div>
+      <button class="btn sm ${st.done?"":"primary"}" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button></div>`; });
+  }
+  $("blockList").innerHTML=html; $("dayBar").style.width="0%";
+  $("modeNote").innerHTML="弱点は時間割の空きや「時間があれば」で。毎日の最後に「📖 記録」から分析ファイルを保存すると、次の日の時間割に反映します。";
+}
+const SUBST=["未着手","取り組み中","完了","答え合わせ済"];
+function importHtml(){
+  const rows=[]; SUBS.forEach(x=>((store.imp||{})[x.id]||[]).forEach(r=>rows.push({x,r})));
+  rows.sort((p,q)=>q.r.ts-p.r.ts);
+  let h=`<div class="slothead">📸 答え合わせの取り込み状況</div><div class="card">`;
+  if(!rows.length) h+=`<div class="lead">まだ取り込んだものはありません。提出物タブで、答え合わせが済んだ提出物の「📸 取り込み」を押してください。</div>`;
+  else h+=rows.map(({x,r})=>{ const st=r.block?(store.blocks[r.block]||{}):{}; return `<div class="lead" style="margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:6px">✅ ${r.at}　<b>${SUBJ[x.subj]}</b> ${x.name}<br><small>${r.pages?r.pages+"／":""}写真${r.files}枚／まちがい ${r.wrong}問 → ${r.block?("弱点に追加"+(st.done?"（やり直し済）":"（まだ）")):"まちがいなし"}</small></div>`; }).join("");
+  return h+`</div>`;
+}
+function renderSub(){
+  let html=`<div class="card"><div style="font-size:18px;font-weight:800">提出物</div>
+    <div class="lead">提出物は先にやって、終わったら<b>自分で答え合わせ</b>。<br>答え合わせが済んだら、その提出物の<b>「📸 取り込み」</b>を押して、答え合わせしたページの写真をえらびます（ドライブの「答え合わせ」フォルダからでも、その場でカメラでとってもOK。何枚でも）。まちがえた問題が<b>類似問題つきで「弱点」タブに入り</b>、終わると「✅ 取り込み完了」が出ます。</div></div>`;
+  const order=["sugaku","rika","eigo","kokugo","shakai","ongaku","bijutsu","hotai","gika"];
+  order.forEach(sj=>SUBS.filter(x=>x.subj===sj).forEach(x=>{ const v=store.sub[x.id]||0;
+    const im=(store.imp||{})[x.id]||[], last=im[im.length-1];
+    const stat = impBusy[x.id] ? `<div class="imp busy"><span class="spinner" style="border-color:var(--accent);border-top-color:transparent"></span>取り込み中…（30秒〜1分）</div>`
+      : impMsg[x.id] ? `<div class="imp err">⚠ ${esc(impMsg[x.id])}</div>`
+      : last ? `<div class="imp ok">✅ 取り込み完了 ${last.at}　${last.wrong?`まちがい ${last.wrong}問 → 弱点へ`:"まちがいなし"}${im.length>1?`（${im.length}回分）`:""}${last.note?`<br><small>${esc(last.note)}</small>`:""}</div>` : "";
+    html+=`<div class="subrow" style="--c:${color(sj)}"><div class="nm"><b>${SUBJ[sj]}</b>　${x.name}<small>提出：${x.due}</small>${x.photo?`<small>📷写真で見た状況：${x.photo}</small>`:""}${stat}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${SUBST.map((t,k)=>`<button class="stbtn ${v===k?"on":""}" onclick="setSub('${x.id}',${k})">${t}</button>`).join("")}
+      ${x.noimp?"":`<button class="btn sm ${last?"":"primary"}" style="width:100%;margin-top:2px" ${impBusy[x.id]?"disabled":""} onclick="pickImport('${x.id}')">${last?"📸 追加で取り込み":"📸 取り込み"}</button>`}</div></div>`; }));
+  html+=importHtml();
+  $("blockList").innerHTML=html; $("dayBar").style.width=Math.round(SUBS.filter(x=>(store.sub[x.id]||0)>=2).length/SUBS.length*100)+"%";
+  $("modeNote").innerHTML="状態は分析ファイルにも入ります。";
+}
+function setSub(id,k){ store.sub[id]=k; save(); renderHome(); }
+function firstOpen(bs){ const i=bs.findIndex(b=>!store.blocks[b.id]?.done); return i; }
+function pickDay(d){ store.day=d; save(); renderHome(); }
+
+/* ============================================================
+   ブロックの実行
+   ============================================================ */
+let run=null, clockTimer=null;
+function startBlock(id){
+  let b = BLOCKS.concat(revBlocks()).find(x=>x.id===id);
+  run = { b, t0:Date.now(), idx:0, queue:[], round:1, ok:0, n:0, phase:"intro" };
+  if(b.type==="mix"||b.type==="weak"||b.type==="weak-all") run.items = mixItems(b);
+  else run.items = (b.items||[]).slice();
+  if(b.type==="weak" && !b.min){ run.b = Object.assign({}, b, { min: Math.max(5, Math.ceil(run.items.length*1.2)) }); }
+  run.per = Math.max(15, Math.round(run.b.min*60/Math.max(1,run.items.length))); run.times=[]; run.qt0=null;
+  $("home").classList.add("hidden"); $("run").classList.remove("hidden");
+  document.documentElement.style.setProperty("--c", color(b.subj));
+  $("rTag").textContent = SUBJ[b.subj]; $("rTag").style.background = color(b.subj);
+  clearInterval(clockTimer); clockTimer=setInterval(tick,1000); tick();
+  showIntro();
+}
+function tick(){
+  if(!run) return;
+  const sec=Math.floor((Date.now()-run.t0)/1000), lim=run.b.min*60;
+  if(run.b.type==="break"||run.b.type==="task"){
+    const left=Math.max(0,lim-sec);
+    $("rClock").textContent = `のこり ${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;
+    const big=$("breakLeft"); if(big) big.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;
+    if(left===0 && !run.rang){ run.rang=true; beep(); }
+    $("rClock").classList.remove("over"); return;
+  }
+  $("rClock").textContent = `${Math.floor(sec/60)}分 / ${run.b.min}分`;
+  $("rClock").classList.toggle("over", sec>lim);
+  /* 1問ごとの目安バー */
+  const bar=$("qPaceBar");
+  if(run.qt0 && !run.answered){ const q=(Date.now()-run.qt0)/1000, r=q/run.per;
+    bar.style.width=Math.min(100,r*100)+"%"; bar.className = r>1.5?"over":r>1?"warn":""; }
+  else if(!run.qt0){ bar.style.width="0%"; }
+  /* 予定より早い／遅い（1回目のみ） */
+  const pc=$("rPace");
+  if(run.round===1 && run.items.length && run.b.type!=="explain" && run.idx>0){
+    const diff = Math.round((run.idx*run.per - sec)/60);
+    pc.textContent = diff>0 ? `予定より${diff}分早い` : diff<0 ? `予定より${-diff}分おくれ` : "予定どおり";
+    pc.className = "pace " + (diff>0?"ahead":diff<0?"behind":"");
+  } else { pc.textContent=""; pc.className="pace"; }
+}
+function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(); o.frequency.value=880; o.connect(a.destination); o.start(); setTimeout(()=>{o.stop();a.close();},600);}catch(e){} }
+function setProg(){
+  const tot = (run.round===2 ? run.queue.length : run.items.length)||1;
+  $("rProg").style.width = Math.round(Math.min(run.idx,tot)/tot*100)+"%";
+  $("rCount").textContent = run.items.length ? `${Math.min(run.idx+1,tot)}/${tot}${run.round>1?"（2回目）":""}` : "";
+}
+function showIntro(){
+  const b=run.b; hidePad(); setProg();
+  if(b.type==="break"){
+    $("stage").innerHTML = `<div class="card" style="text-align:center"><div class="lead">${b.title}</div>
+      <div class="big" id="breakLeft"></div><div class="lead">目を休めて、水を飲もう。</div>
+      <div style="margin-top:14px"><button class="btn primary" onclick="finishBlock(null)">休けい終わり</button></div></div>`;
+    tick(); return;
+  }
+  if(b.type==="task") return showTask(b);
+  let h = `<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:8px">${b.title}</div>`;
+  if(b.lead) h += `<div class="lead">${b.lead}</div>`;
+  if(b.points) h += `<ul class="points">${b.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
+  if(run.items.length && b.type!=="explain"){ const sec=Math.round(b.min*60/run.items.length);
+    h += `<div class="hintbox">⏱ ${run.items.length}問を${b.min}分で。目安は<b>1問 ${sec>=60?Math.floor(sec/60)+"分"+(sec%60?sec%60+"秒":""):sec+"秒"}</b>。迷ったら書いて答え合わせ、止まらない。</div>`; }
+  if((b.type==="mix"||b.type==="weak"||b.type==="weak-all") && !run.items.length) h += `<div class="lead" style="margin-top:8px">まちがえた問題はありません！ このブロックは終わりにしてOK。</div>`;
+  h += `</div><div class="tools"><button class="btn" id="voiceBtn" onclick="toggleGuide()">🔊 もう一度聞く</button><div class="sp"></div>`;
+  h += ((b.type==="mix"||b.type==="weak"||b.type==="weak-all") && !run.items.length)
+    ? `<button class="btn primary" onclick="finishBlock(null)">終わる</button>`
+    : `<button class="btn primary" onclick="nextItem()">${b.points?"ポイントを読んだ → 問題へ":"はじめる"}</button>`;
+  $("stage").innerHTML = h + `</div>`;
+  speakGuide();
+}
+
+/* ---------- 音声ガイド（最初の説明を読み上げ） ---------- */
+function guideText(){
+  const b=run.b;
+  const num=t=>t.replace(/①/g,"いち、").replace(/②/g,"に、").replace(/③/g,"さん、").replace(/④/g,"よん、").replace(/＋/g,"");
+  let t=num(b.title)+"。";
+  if(b.lead) t+=b.lead+"。";
+  if(b.voice) t+=b.voice;
+  else if(b.points) t+="まず、画面のポイントを読もう。";
+  if(run.items.length && b.type!=="explain"){ const sec=Math.round(b.min*60/run.items.length);
+    t+=`${run.items.length}問を${b.min}分で解きます。目安は1問${sec>=60?Math.floor(sec/60)+"分"+(sec%60?sec%60+"秒":""):sec+"秒"}。迷ったら書いて答え合わせ。止まらずに進もう。`; }
+  t=t.replace(/<[^>]+>/g,"").replace(/[（(]/g,"、").replace(/[）)]/g,"、").replace(/→/g,"、").replace(/〜/g,"").replace(/▶/g,"再生ボタン").replace(/／/g,"、")
+     .replace(/(\d+)問/g,"$1もん").replace(/、+/g,"、").replace(/、。/g,"。").replace(/。+/g,"。").replace(/「」/g,"");
+  return t;
+}
+function jaVoice(){ const vs=speechSynthesis.getVoices(); return vs.find(v=>/ja/i.test(v.lang)&&/Google|Kyoko|O-ren|Nanami/i.test(v.name))||vs.find(v=>/ja/i.test(v.lang)); }
+function speakGuide(){
+  if(!("speechSynthesis" in window)) { const vb=$("voiceBtn"); if(vb) vb.remove(); return; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const parts=guideText().split(/(?<=[。！？])/).map(x=>x.trim()).filter(Boolean);
+  const v=jaVoice();
+  parts.forEach((p,i)=>{ const u=new SpeechSynthesisUtterance(p); u.lang="ja-JP"; if(v) u.voice=v; u.rate=1.05;
+    if(i===parts.length-1) u.onend=()=>{ const vb=$("voiceBtn"); if(vb) vb.textContent="🔊 もう一度聞く"; };
+    speechSynthesis.speak(u); });
+  const vb=$("voiceBtn"); if(vb) vb.textContent="⏹ 音声をとめる";
+}
+function toggleGuide(){
+  if(speechSynthesis.speaking){ speechSynthesis.cancel(); $("voiceBtn").textContent="🔊 もう一度聞く"; }
+  else speakGuide();
+}
+function stopGuide(){ try{ if(!run||!run.b||!curItem()||!curItem().say) speechSynthesis.cancel(); }catch(e){} }
+function showTask(b){
+  hidePad(); const subs=(b.subs||[]).map(id=>SUBS.find(x=>x.id===id)).filter(Boolean);
+  let h=`<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:8px">${b.title}</div><div class="lead">${b.lead||""}</div>`;
+  if(subs.length) h+=`<div style="margin-top:10px">${subs.map(x=>`<div class="lead">・${x.name}<br><small style="color:var(--sub)">提出：${x.due}　いまの状態：${SUBST[store.sub[x.id]||0]}${x.photo?`<br>📷写真で見た状況：${x.photo}`:""}</small></div>`).join("")}</div>`;
+  h+=`<div class="big" id="breakLeft"></div></div>`;
+  if(subs.length) h+=`<div class="tools"><button class="btn" onclick="taskDone(1)">途中まで</button><div class="sp"></div><button class="btn ok" onclick="taskDone(2)">終わった（完了）</button><button class="btn primary" onclick="taskDone(3)">答え合わせまで済んだ</button></div>`;
+  else h+=`<div class="tools"><div class="sp"></div><button class="btn primary" onclick="taskDone(0)">終わる</button></div>`;
+  $("stage").innerHTML=h; tick(); try{ speakGuide(); }catch(e){}
+}
+function taskDone(k){ (run.b.subs||[]).forEach(id=>{ if(k>(store.sub[id]||0)) store.sub[id]=k; }); save(); finishBlock(null); }
+function curItem(){ return run.round===1 ? run.items[run.idx] : run.queue[run.idx]; }
+function nextItem(){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const list = run.round===1 ? run.items : run.queue;
+  if(run.idx < list.length && (Date.now()-run.t0)/1000 >= run.b.min*60 && run.b.type!=="explain"){
+    if(run.round===1 && run.b.type!=="weak" && run.b.type!=="mix"){
+      list.slice(run.idx).forEach(it=>{ if(!store.res[it.id]||store.res[it.id].untried) store.res[it.id]={ ok:false, untried:true, day:run.b.day, subj:run.b.subj, ts:Date.now() }; });
+      run.untried=list.length-run.idx; save();
+    }
+    run.timeUp=true; run.idx=list.length; run.wrongNow=run.round===1?[]:run.wrongNow;
+  }
+  if(run.idx >= list.length){
+    /* 1回目でまちがえた問題を、ブロックの残り時間のぶんだけもう一度 */
+    if(run.round===1 && run.wrongNow && run.wrongNow.length && run.b.type!=="explain" && run.b.type!=="mix"){
+      const left = run.b.min*60 - (Date.now()-run.t0)/1000;
+      const per = Math.max(30, run.b.min*60/Math.max(1,run.items.length));
+      const n = Math.min(run.wrongNow.length, Math.floor(left/per));
+      const carry = run.wrongNow.length - Math.max(0,n);
+      if(n>0){
+        run.round=2; run.queue=run.wrongNow.slice(0,n).map(vv); run.idx=0; run.carry=run.wrongNow.slice(n); run.wrongNow=[];
+        $("stage").innerHTML = `<div class="card"><div class="lead"><b>のこり時間で、まちがえた ${n} 問の類似問題。</b><br>数字や聞き方が変わっています。解説を思い出して書こう。${carry?`<br>のこり ${carry} 問は「弱点」タブにまわします。`:""}<br>時間が来たら、とちゅうでも終わります。</div></div>
+          <div class="tools"><div class="sp"></div><button class="btn primary" onclick="showItem()">2回目へ</button></div>`;
+        hidePad(); return;
+      }
+      run.carry=run.wrongNow; run.wrongNow=[];
+    }
+    return finishBlock(run.n ? Math.round(run.ok/run.n*100) : null);
+  }
+  showItem();
+}
+function showItem(){
+  const it=curItem(); setProg();
+  run.qt0=Date.now(); run.answered=false; tick();
+  if(run.b.type==="explain") return showExplain(it);
+  let h = `<div class="card">`;
+  if(it.ref) h += `<div class="ref">問題用紙 ${it.ref}</div>`;
+  if(it.say){
+    run.plays=0;
+    h += `<div class="say"><button class="btn primary listenbtn" id="playBtn" onclick="playSay()">▶ 聞く</button><span id="playLeft" style="color:var(--sub)">あと2回</span></div>`;
+  }
+  h += `<div class="qtext" style="margin-top:6px">${it.q}</div>`;
+  if(it.hint) h += `<div style="margin-top:10px"><button class="btn sm" onclick="this.outerHTML='<div class=hintbox>💡 ${esc(it.hint)}</div>'">💡 ヒント</button></div>`;
+  h += `</div>`;
+  $("stage").innerHTML = h;
+  if(it.m==="self"){ hidePad();
+    $("stage").innerHTML += `<div class="tools"><div class="sp"></div><button class="btn primary" onclick="this.parentNode.remove();showResult(curItem(),null)">問題用紙に書けた → 答えを見る</button></div>`;
+    return; }
+  showPad();
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+
+/* ---------- 説明タイム ---------- */
+function showExplain(it){
+  hidePad();
+  $("stage").innerHTML = `<div class="card">${it.ref?`<div class="ref">問題用紙 ${it.ref}</div>`:""}
+    <div class="qtext">「${it.q}」を説明しよう</div>
+    <div class="lead" style="color:var(--sub);margin-top:6px">聞く人：言えたポイントにチェック</div>
+    <div class="pts">${it.pts.map((p,i)=>`<label><input type="checkbox" id="pt${i}" onchange="ptCheck()"> ${p}</label>`).join("")}</div></div>
+    <div class="tools"><button class="btn" onclick="explainDone(false)">もう一度あとで</button><div class="sp"></div>
+    <button class="btn ok" id="exOk" onclick="explainDone(true)" disabled>説明できた</button></div>`;
+}
+function ptCheck(){ const it=curItem(); $("exOk").disabled = !it.pts.every((_,i)=>$("pt"+i).checked); }
+function explainDone(ok){
+  const it=curItem(); store.explain[it.id]={ok, ts:Date.now()}; save();
+  run.n++; if(ok) run.ok++; run.idx++; nextItem();
+}
+
+/* ---------- リスニング ---------- */
+function playSay(){
+  const it=curItem(); if(run.plays>=2) return;
+  if(!("speechSynthesis" in window)){ $("playLeft").textContent="この端末は音声読み上げに対応していません"; return; }
+  run.plays++; $("playLeft").textContent = run.plays>=2 ? "（もう聞けません）" : "あと1回";
+  if(run.plays>=2) $("playBtn").disabled=true;
+  speechSynthesis.cancel();
+  const voices=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+  const vA=voices.find(v=>/US/i.test(v.lang))||voices[0], vB=voices.find(v=>v!==vA)||vA;
+  it.say.forEach(([who,txt],i)=>{
+    const u=new SpeechSynthesisUtterance(txt); u.lang="en-US"; u.rate=0.88;
+    if(who==="B"){ u.voice=vB; u.pitch=1.25; } else { u.voice=vA; u.pitch=who==="N"?1:0.9; }
+    speechSynthesis.speak(u);
+    if(i<it.say.length-1){ const g=new SpeechSynthesisUtterance(" "); g.rate=0.5; speechSynthesis.speak(g); }
+  });
+}
+if("speechSynthesis" in window) speechSynthesis.getVoices();
+
+/* ---------- 総復習：まちがえた問題を集める ---------- */
+function vv(it){ if(!it || !it.v || !it.v.length) return it; const r=store.res[it.id]; const L=it.v.length, k=(r&&r.vi||0)%(L+1);
+  if(k===L) return Object.assign({}, it, {_vk:k});   /* 類似問題を一周したら、もとの問題にもどる */
+  return Object.assign({}, it, it.v[k], {id:it.id, _vk:k, _subj:it._subj}); }
+function allItems(){
+  const seen={}; const out=[];
+  BLOCKS.concat(revBlocks()).filter(x=>x.items && x.type!=="explain" && x.type!=="mix" && x.type!=="weak")
+    .forEach(x=>x.items.forEach(it=>{ if(!seen[it.id]){ seen[it.id]=1; out.push(Object.assign({},it,{_subj:x.subj,_day:x.day})); } }));
+  return out;
+}
+function remaining(filter){ return allItems().filter(it=>store.res[it.id] && !store.res[it.id].ok && (!filter||filter(it))); }
+function mixItems(b){
+  /* その日にまちがえて、まだ直っていない問題だけ（月曜は月曜分、火曜は火曜分） */
+  if(b.type==="weak") return remaining(it=>it._subj===b.subj).map(it=>store.res[it.id].untried?it:vv(it));
+  if(b.type==="weak-all") return remaining().map(it=>store.res[it.id].untried?it:vv(it));
+  return remaining(it=>(store.res[it.id].day||it._day)===b.day);
+}
+
+/* ---------- 終了 ---------- */
+function finishBlock(score){
+  const b=run.b, sec=Math.floor((Date.now()-run.t0)/1000);
+  const sch=BLOCKS.filter(x=>x.day===b.day&&x.slot!=null), nb=sch[sch.findIndex(x=>x.id===b.id)+1];
+  if(nb&&nb.type==="explain") setTimeout(()=>{try{const u=new SpeechSynthesisUtterance("つぎは説明タイム。おうちの人を呼ぼう。");u.lang="ja-JP";const v=jaVoice();if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}},400);
+  store.blocks[b.id] = { done:true, score: score!=null ? score+"%" : null, sec, ts:Date.now() }; save();
+  clearInterval(clockTimer); hidePad(); speechSynthesis?.cancel?.(); run.qt0=null; $("qPaceBar").style.width="0%"; $("rPace").textContent="";
+  const left = (b.type==="mix"||b.type==="weak") ? remaining(it=>run.items.some(x=>x.id===it.id)).length
+             : (b.items||[]).filter(it=>store.res[it.id]&&!store.res[it.id].ok).length;
+  let msg = score==null ? "おつかれさま！" : (score>=80 ? "よくできました！" : score>=50 ? "もう少し！" : "ここからが本番。");
+  if(run.timeUp) msg += "<br>時間になったので、ここで終わりにしました。"+(run.untried?`（解けなかった ${run.untried}問は「弱点」タブへ）`:"");
+  if(run.times && run.times.length){
+    const avg=Math.round(run.times.reduce((a,x)=>a+x.sec,0)/run.times.length);
+    const slow=run.times.filter(x=>x.sec>run.per*1.5).length;
+    const prevBest=store.best?.[b.id];
+    msg += `<br>1問の平均 <b>${avg}秒</b>（目安 ${run.per}秒）${avg<=run.per?" ✔ 目安クリア":""}`;
+    if(slow) msg += `<br>目安の1.5倍以上かかった問題 ${slow}問 → スピード練習にまわします`;
+    if(prevBest) msg += `<br>前回の平均 ${prevBest}秒 → 今回 ${avg}秒 ${avg<prevBest?"（速くなった！）":""}`;
+    store.best=store.best||{}; store.best[b.id]=prevBest?Math.min(prevBest,avg):avg; save();
+  }
+  if(left) msg += `<br>まだ✕・時間切れの問題 <b>${left}問</b> は「弱点」タブへ（✕は類似問題で出ます）。`;
+  $("stage").innerHTML = `<div class="card" style="text-align:center">
+    <div class="lead">${b.title}</div>${score!=null?`<div class="big">${score}%</div>`:""}
+    <div class="lead">${msg}<br>かかった時間：${Math.round(sec/60)}分（目安 ${b.min}分）</div>
+    ${nb&&nb.type==="explain"?`<div class="hintbox" style="margin-top:10px">👪 つぎは説明タイム。おうちの人を呼ぼう。</div>`:""}</div>
+    <div class="tools"><div class="sp"></div><button class="btn primary" onclick="goHome()">つぎへ（ホーム）</button></div>`;
+  $("rProg").style.width="100%";
+}
+function quitBlock(){ modal(`<div style="font-size:18px;font-weight:800;margin-bottom:8px">ホームにもどる？</div><div class="lead">ここまでの〇×は記録されます。</div>
+  <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">つづける</button><button class="btn primary" onclick="closeModal();goHome()">ホームにもどる</button></div>`); }
+function goHome(){ clearInterval(clockTimer); run=null; hidePad(); try{speechSynthesis.cancel();}catch(e){}
+  $("run").classList.add("hidden"); $("home").classList.remove("hidden"); renderHome(); window.scrollTo(0,0); }
+
+/* ============================================================
+   手書きパッド（kijutsu250 と同じしくみ）
+   ============================================================ */
+const pad=$("pad"), ctx=pad.getContext("2d");
+let strokes=[], curStroke=null, activePointer=null, locked=false;
+function showPad(){
+  $("padArea").classList.remove("hidden"); $("resBox").innerHTML="";
+  pad.classList.toggle("big", !!(curItem()&&curItem().big));
+  strokes=[]; locked=false; $("gradeBtn").disabled=false; $("gradeBtn").innerHTML="答え合わせ";
+  resizePad();
+}
+function hidePad(){ $("padArea").classList.add("hidden"); $("resBox").innerHTML=""; }
+function resizePad(){ const r=pad.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  pad.width=Math.round(r.width*d); pad.height=Math.round(r.height*d); ctx.setTransform(d,0,0,d,0,0); redraw(); }
+window.addEventListener("resize",()=>{ if(!$("padArea").classList.contains("hidden")) resizePad(); });
+function pt(e){ const r=pad.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top,p:(e.pointerType==="pen"&&e.pressure>0)?e.pressure:0.5}; }
+function drawSeg(a,b){ ctx.strokeStyle="#111"; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=2+b.p*3.2; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+function drawStroke(s){ if(s.length===1){ ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(s[0].x,s[0].y,2.5,0,7); ctx.fill(); return; } for(let i=1;i<s.length;i++) drawSeg(s[i-1],s[i]); }
+function redraw(){ const r=pad.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height); strokes.forEach(drawStroke); $("padHint").style.display=strokes.length?"none":"block"; }
+pad.addEventListener("pointerdown",e=>{ if(locked||activePointer!==null) return; activePointer=e.pointerId; pad.setPointerCapture(e.pointerId);
+  curStroke=[pt(e)]; strokes.push(curStroke); drawStroke(curStroke); $("padHint").style.display="none"; e.preventDefault(); });
+pad.addEventListener("pointermove",e=>{ if(e.pointerId!==activePointer||!curStroke) return;
+  (e.getCoalescedEvents?e.getCoalescedEvents():[e]).forEach(ev=>{ const p=pt(ev), last=curStroke[curStroke.length-1]; curStroke.push(p); drawSeg(last,p); }); e.preventDefault(); });
+function endStroke(e){ if(e.pointerId!==activePointer) return; activePointer=null; curStroke=null; }
+pad.addEventListener("pointerup",endStroke); pad.addEventListener("pointercancel",endStroke);
+function undo(){ if(locked) return; strokes.pop(); redraw(); }
+function clearPad(){ if(locked) return; strokes=[]; redraw(); }
+function exportImage(){
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  strokes.forEach(s=>s.forEach(p=>{minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);maxX=Math.max(maxX,p.x);maxY=Math.max(maxY,p.y);}));
+  const m=20; minX-=m;minY-=m;maxX+=m;maxY+=m; const w=maxX-minX,h=maxY-minY, sc=Math.min(1.5,768/Math.max(w,h));
+  const c=document.createElement("canvas"); c.width=Math.round(w*sc); c.height=Math.round(h*sc);
+  const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.setTransform(sc,0,0,sc,-minX*sc,-minY*sc);
+  x.strokeStyle="#000"; x.fillStyle="#000"; x.lineCap="round"; x.lineJoin="round";
+  strokes.forEach(s=>{ if(s.length===1){ x.beginPath(); x.arc(s[0].x,s[0].y,2.5,0,7); x.fill(); return; }
+    for(let i=1;i<s.length;i++){ x.lineWidth=2+s[i].p*3.2; x.beginPath(); x.moveTo(s[i-1].x,s[i-1].y); x.lineTo(s[i].x,s[i].y); x.stroke(); } });
+  return c.toDataURL("image/jpeg",0.85);
+}
+
+
+/* ============================================================
+   答え合わせの写真を取り込む（提出物ごと）
+   ============================================================ */
+const impBusy={}, impMsg={}; let impTarget=null;
+function pickImport(sid){
+  if(!apiKey()){ impMsg[sid]="APIキーが入っていないので取り込めません。⚙設定でGeminiのキーを入れてください。"; renderHome(); return; }
+  impTarget=sid; $("impFile").value=""; $("impFile").click();
+}
+function fileToPart(f){
+  return new Promise((ok,ng)=>{
+    const fr=new FileReader(); fr.onerror=()=>ng(new Error("ファイルを読めません"));
+    if(f.type==="application/pdf"){ fr.onload=()=>ok({inline_data:{mime_type:"application/pdf",data:String(fr.result).split(",")[1]}}); fr.readAsDataURL(f); return; }
+    fr.onload=()=>{ const im=new Image(); im.onerror=()=>ng(new Error("画像を読めません"));
+      im.onload=()=>{ const M=2000, r=Math.min(1,M/Math.max(im.width,im.height)); const c=document.createElement("canvas");
+        c.width=Math.round(im.width*r); c.height=Math.round(im.height*r); c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+        ok({inline_data:{mime_type:"image/jpeg",data:c.toDataURL("image/jpeg",0.85).split(",")[1]}}); };
+      im.src=fr.result; };
+    fr.readAsDataURL(f);
+  });
+}
+function impPrompt(sub){
+  return `中学3年生が自分で答え合わせ（丸つけ）をした、学校の問題集・プリント・ノートの写真です。
+教科：${SUBJ[sub.subj]}　提出物：${sub.name}
+次の手順でJSONを作る。
+1. ✕・斜線・チェック・赤ペンで直した答えなど「まちがえた印」がある設問だけを拾う。○の設問は拾わない。印があいまいな設問は拾わない。
+2. 各設問の問題文を、図や表がなくても解けるように文章で書きなおす（選択肢があれば選択肢も書く）。正しい答えは、赤で直した答えか、正しい答え。
+3. それぞれに、同じ力を確かめる類似問題を2問作る（数字・語句・聞き方を変える。答えが1つに決まるもの。同じ問題のくり返しは不可）。
+4. 答えは短く。記述問題は要点だけ。漢字の書き取りは答えの漢字。
+JSONのみ：{"pages":"例 p28〜29","wrong":[{"q":"問題文","a":["正答","別解があれば"],"rule":"採点基準 25字以内","exp":"解説 40字以内","v":[{"q":"類似問題","a":["正答"],"exp":"解説"}]}],"note":"読めなかったところ等 30字以内。なければ空"}`;
+}
+async function doImport(){
+  const files=[...$("impFile").files]; const sid=impTarget; $("impFile").value=""; if(!files.length||!sid) return;
+  const sub=SUBS.find(x=>x.id===sid); if(!sub) return;
+  impBusy[sid]=true; delete impMsg[sid]; renderHome();
+  try{
+    const parts=[]; for(const f of files) parts.push(await fileToPart(f));
+    const r=await callGeminiParts(impPrompt(sub), parts, 16000, "low");
+    const S=x=>[].concat(x||[]).map(v=>String(v).trim()).filter(Boolean);
+    const ts=Date.now(), bid="rev-"+sid+"-"+ts;
+    const items=(r.wrong||[]).filter(w=>w&&w.q&&S(w.a).length).map((w,i)=>({
+      id:bid+"-"+(i+1), q:esc(w.q).replace(/\n/g,"<br>"), a:S(w.a), m:"ai", rule:w.rule||"正解と同じ内容なら正解。表記のゆれは可。", exp:esc(w.exp||""), ref:"提出物 "+sub.name,
+      v:(w.v||[]).filter(v=>v&&v.q&&S(v.a).length).slice(0,3).map(v=>({q:esc(v.q).replace(/\n/g,"<br>"), a:S(v.a), m:"ai", rule:v.rule||"正解と同じ内容なら正解。表記のゆれは可。", exp:esc(v.exp||"")})) }));
+    if(items.length){
+      store.revs.push({ id:bid, day:"rev", subj:sub.subj, type:"drill", min:Math.max(5,Math.ceil(items.length*2)), title:"📸 "+sub.name+(r.pages?"（"+r.pages+"）":"")+" のまちがい直し", lead:"自分で答え合わせしてまちがえた問題です。正解するまで類似問題が出ます。", items });
+      items.forEach(it=>{ store.res[it.id]={ ok:false, photo:true, vi:0, day:"rev", subj:sub.subj, ts }; });
+    }
+    const d=new Date(ts);
+    (store.imp[sid]=store.imp[sid]||[]).push({ ts, at:`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`, files:files.length, pages:String(r.pages||""), wrong:items.length, block:items.length?bid:null, note:String(r.note||"").slice(0,60) });
+    if((store.sub[sid]||0)<3) store.sub[sid]=3;
+    save();
+  }catch(e){ impMsg[sid]="取り込みできませんでした（"+e.message+"）。もう一度「📸 取り込み」を押してください。"; }
+  impBusy[sid]=false; renderHome();
+}
+
+/* ============================================================
+   採点（Gemini）
+   ============================================================ */
+function stripTags(h){ const d=document.createElement("div"); d.innerHTML=String(h).replace(/<br>/g," / "); return d.textContent; }
+async function callGemini(prompt, img, maxTok){
+  return callGeminiParts(prompt, img?[{inline_data:{mime_type:"image/jpeg",data:img.split(",")[1]}}]:[], maxTok, "minimal");
+}
+async function callGeminiParts(prompt, extra, maxTok, think){
+  const parts=[{text:prompt}].concat(extra||[]);
+  const body={contents:[{parts}],generationConfig:{temperature:0,responseMimeType:"application/json",maxOutputTokens:maxTok,thinkingConfig:{thinkingLevel:think||"minimal"}}};
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName())}:generateContent`;
+  const call=b=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":apiKey()},body:JSON.stringify(b)});
+  let res=await call(body);
+  if(res.status===400){ delete body.generationConfig.thinkingConfig; body.generationConfig.maxOutputTokens=Math.max(1024,maxTok); res=await call(body); }
+  if(!res.ok){ let m="HTTP "+res.status; try{ const j=await res.json(); m=j.error?.message?.slice(0,80)||m; }catch(e){} throw new Error(m); }
+  const j=await res.json(); const t=j.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+  const mm=t.match(/\{[\s\S]*\}/); if(!mm) throw new Error("応答を読み取れません"); return JSON.parse(mm[0]);
+}
+function norm(x){ return String(x||"").normalize("NFKC").replace(/[\s　.,。、・「」『』"'’()（）]/g,"").replace(/[−–ー―]/g,"-").toLowerCase(); }
+function exactMatch(read, it){
+  const r=norm(read); if(!r||r.includes("?")) return false;
+  if(it.sort){ const k=x=>[...String(x).normalize("NFKC")].filter(c=>/[ァ-ヶa-zA-Z]/.test(c)).sort().join("");
+    return it.a.some(a=>k(a)===k(read)); }
+  return it.a.some(a=>{ const n=norm(a); return r===n || (r.startsWith(n) && /^[ぁ-ゟ]+$/.test(r.slice(n.length))); });
+}
+async function aiGrade(it, img){
+  if(it.m==="exact"){
+    const r=await callGemini(`手書き文字を一字一句そのまま書き起こす。誤字・脱字・つづり誤りも直さず、推測で補わない。読めない字は?。\n文字種:${it.hint||"指定なし"}\nJSONのみ:{"read":"書き起こし","unclear":true/false}`, img, 120);
+    const ok=exactMatch(r.read,it);
+    return {read:r.read, correct:ok, comment:r.unclear?"読み取りに自信がありません。判定を確認してください。":""};
+  }
+  return await callGemini(`中3の手書き解答を採点。画像の文字を推測せず読み取り、基準に従い判定。\n問題:${stripTags(it.q)}\n正解:${it.a.join("／")}\n基準:${it.rule||"正解と同じ内容なら正解"}\nJSONのみ:{"read":"読取","correct":true/false,"comment":"20字以内"}`, img, 220);
+}
+async function onGrade(){
+  if(!strokes.length){ $("resBox").innerHTML=`<div class="res"><div class="row">答えを書いてから「答え合わせ」を押そう。</div></div>`; return; }
+  const it=curItem(); locked=true; $("gradeBtn").disabled=true;
+  run.ansSec = Math.round((Date.now()-run.qt0)/1000); run.answered=true;
+  if(!apiKey()){ return showResult(it, null); }
+  $("gradeBtn").innerHTML=`<span class="spinner"></span>採点中…`;
+  try{ const r=await aiGrade(it, exportImage()); showResult(it, r); }
+  catch(e){ $("resBox").innerHTML=`<div class="res"><div class="row">AI採点ができませんでした（${esc(e.message)}）。自己採点にします。</div></div>`; showResult(it,null,true); }
+}
+function showResult(it, r, keep){
+  $("gradeBtn").innerHTML="答え合わせ";
+  const box=$("resBox");
+  if(!r){ /* 自己採点 */
+    box.innerHTML = (keep?box.innerHTML:"") + `<div class="res"><div class="row"><b>正解</b>${esc(it.a[0])}</div><div class="row">${it.exp||""}</div>
+      <div class="fix"><span style="align-self:center">自分の答えは…</span><button class="btn ok" onclick="record(true)">〇 合っていた</button><button class="btn ng" onclick="record(false)">✕ ちがった</button></div></div>`;
+    return;
+  }
+  const ok=!!r.correct; run.last={ok, read:r.read};
+  box.innerHTML = `<div class="res ${ok?"ok":"ng"}"><span class="mark">${ok?"〇":"✕"}</span>
+    <div class="row"><b>読み取り</b>${esc(r.read||"")}</div>
+    <div class="row"><b>正解</b>${esc(it.a[0])}</div>
+    ${r.comment?`<div class="row" style="color:var(--sub)">${esc(r.comment)}</div>`:""}
+    <div class="row">${it.exp||""}</div>
+    <div class="fix"><button class="btn sm" onclick="flip()">判定がおかしい → ${ok?"✕":"〇"}にする</button><div style="flex:1"></div>
+    <button class="btn primary" onclick="record(${ok})">つぎへ</button></div></div>`;
+  clearTimeout(run.autoT);
+  if(ok && !r.comment?.includes("手で直し")) run.autoT=setTimeout(()=>{ if(run && curItem()===it) record(true); }, 1200);
+}
+function flip(){ clearTimeout(run.autoT); const it=curItem(); const ok=!run.last.ok; showResult(it,{correct:ok,read:run.last.read,comment:"（判定を手で直しました）"}); }
+function record(ok){
+  clearTimeout(run.autoT);
+  const it=curItem();
+  const qs = run.ansSec!=null ? run.ansSec : Math.round((Date.now()-(run.qt0||Date.now()))/1000); run.ansSec=null;
+  if(run.round===1) run.times.push({id:it.id, ref:it.ref, sec:qs, ok, subj:it._subj||run.b.subj});
+  if(run.round===1){ run.n++; if(ok) run.ok++; if(!ok){ (run.wrongNow=run.wrongNow||[]).push(it); } }
+  /* 2回目で〇でも、1回目の✕は総復習に残す（同じ日に3回目を出すため）。総復習で〇になったら消える */
+  const prev=store.res[it.id];
+  /* 1回目✕ → ok:false。2回目・まとめ・水曜で〇 → ok:true（fixed） */
+  const day = (run.b.type==="weak"||run.b.type==="weak-all") ? (prev?.day||"weak") : run.b.day;
+  if(run.round===1 && run.b.type!=="mix" && run.b.type!=="weak" && run.b.type!=="weak-all")
+    store.res[it.id]={ ok, ts:Date.now(), tries:(prev?.tries||0)+1, day, subj:run.b.subj, wrong1: !ok, sec:qs, per:run.per };
+  else
+    store.res[it.id]=Object.assign({}, prev||{day,subj:run.b.subj}, { ok: ok || false, fixed: ok, untried:false, ts:Date.now(), tries:(prev?.tries||0)+1, vi: it._vk!=null ? it._vk+1 : (prev?.vi||0) });
+  if(run.round===1 && prev && prev.untried && run.b.type==="weak"){ store.res[it.id].wrong1=!ok; store.res[it.id].sec=qs; store.res[it.id].per=run.per; }
+  save(); run.idx++; nextItem();
+}
+
+/* ============================================================
+   記録・保存・設定
+   ============================================================ */
+function summaryText(){
+  let t="【期末対策】\n";
+  Object.keys(DAYS).filter(d=>d!=="wed").forEach(d=>{
+    t+=`■${DAYS[d].label}\n`;
+    blocksOf(d).filter(b=>b.type!=="break").forEach(b=>{ const s=store.blocks[b.id];
+      const best=store.best?.[b.id];
+      t+=`・${b.title}：${s?.done?(s.score||"済")+`（${Math.round((s.sec||0)/60)}分${best?`・1問平均${best}秒`:""}）`:"未"}\n`; });
+  });
+  const rem=remaining();
+  t+=`■弱点：まだ✕ ${rem.length}問\n`;
+  ["sugaku","rika","eigo","shakai","kokugo"].forEach(sj=>{ const r=rem.filter(it=>it._subj===sj); if(r.length)
+    t+=`${SUBJ[sj]}${r.length}問：${r.map(it=>it.ref?it.ref.replace(/^\S+ /,""):it.id).join("、")}\n`; });
+  const slow=allItems().filter(it=>{const r=store.res[it.id]; return r && r.ok && r.sec && r.per && r.sec>r.per*1.5;});
+  if(slow.length){ t+=`■時間がかかった問題（正解だが目安の1.5倍以上）${slow.length}問\n`;
+    ["sugaku","rika","eigo","shakai","kokugo"].forEach(sj=>{ const r=slow.filter(it=>it._subj===sj); if(r.length)
+      t+=`${SUBJ[sj]}：${r.map(it=>(it.ref?it.ref.replace(/^\S+ /,""):it.id)+`(${store.res[it.id].sec}秒)`).join("、")}\n`; }); }
+  const wrong=[];
+  const ex=BLOCKS.flatMap(b=>b.type==="explain"?b.items.filter(it=>store.explain[it.id]&&!store.explain[it.id].ok).map(it=>it.q):[]);
+  if(ex.length) t+=`説明やり直し：${ex.join("、")}\n`;
+  return t;
+}
+/* ---------- 分析ファイル（この端末＋Googleドライブに保存） ---------- */
+function analysisText(){
+  const SJ=["sugaku","rika","eigo","shakai","kokugo"], now=new Date();
+  const items=allItems(), done=items.filter(it=>store.res[it.id]);
+  const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—";
+  let t=`2学期期末テスト対策 分析レポート\n作成：${now.toLocaleString("ja-JP")}\n\n`;
+  t+=`■ブロックの結果\n`;
+  Object.keys(DAYS).forEach(d=>{ t+=`[${DAYS[d].label}]\n`;
+    blocksOf(d).forEach(b=>{ const s=store.blocks[b.id];
+      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）`:"未実施"}\n`; }); });
+  t+=`\n■教科別（1回目の正答率・1問の平均時間）\n`;
+  const plan=[];
+  SJ.forEach(sj=>{
+    const d=done.filter(it=>it._subj===sj); if(!d.length) return;
+    const r=d.map(it=>store.res[it.id]);
+    const first=r.filter(x=>x.wrong1===false).length, firstN=r.filter(x=>x.wrong1!==undefined).length;
+    const ts=r.filter(x=>x.sec), avg=ts.length?Math.round(ts.reduce((a,x)=>a+x.sec,0)/ts.length):0;
+    const per=ts.length?Math.round(ts.reduce((a,x)=>a+(x.per||0),0)/ts.length):0;
+    const wrong=d.filter(it=>!store.res[it.id].ok), fixed=d.filter(it=>store.res[it.id].fixed);
+    const slow=d.filter(it=>{const x=store.res[it.id]; return x.ok && x.sec && x.per && x.sec>x.per*1.5;});
+    const unt=d.filter(it=>store.res[it.id].untried);
+    t+=`${SUBJ[sj]}：取り組んだ${d.length}問／1回目正答率 ${pct(first,firstN)}／平均 ${avg}秒（目安${per}秒）／類似問題で直した ${fixed.length}問／まだ✕ ${wrong.length-unt.length}問／時間切れ ${unt.length}問／時間がかかった ${slow.length}問\n`;
+    const wr=wrong.filter(it=>!store.res[it.id].untried);
+    if(wr.length) t+=`  まだ✕：${wr.map(it=>(it.ref||it.id).replace(/^\S+ /,"")+" "+stripTags(it.q).slice(0,24)).join(" ／ ")}\n`;
+    if(unt.length) t+=`  時間切れ：${unt.map(it=>it.id).join("、")}\n`;
+    if(slow.length) t+=`  時間がかかった：${slow.map(it=>(it.ref||it.id).replace(/^\S+ /,"")+`(${store.res[it.id].sec}秒)`).join("、")}\n`;
+    const m=Math.ceil(wrong.length*2 + slow.length*1);
+    if(m) plan.push([SUBJ[sj],m,wrong.length,slow.length]);
+  });
+  const ex=BLOCKS.flatMap(b=>b.type==="explain"?b.items.filter(it=>store.explain[it.id]&&!store.explain[it.id].ok).map(it=>it.q):[]);
+  if(ex.length) t+=`\n■説明できなかった：${ex.join("、")}\n`;
+  t+=`\n■提出物\n`+SUBS.map(x=>`・${SUBJ[x.subj]} ${x.name}：${SUBST[store.sub[x.id]||0]}（提出 ${x.due}）`).join("\n")+"\n";
+  t+=`\n■答え合わせの取り込み\n`; let ni=0;
+  SUBS.forEach(x=>((store.imp||{})[x.id]||[]).forEach(r=>{ ni++; const b=revBlocks().find(z=>z.id===r.block);
+    const left=b?b.items.filter(it=>store.res[it.id]&&!store.res[it.id].ok).length:0;
+    t+=`・${r.at} ${SUBJ[x.subj]} ${x.name} ${r.pages}：まちがい${r.wrong}問（まだ✕ ${left}問）${r.note?" ※"+r.note:""}\n`;
+    if(b) b.items.forEach(it=>{ if(store.res[it.id]&&!store.res[it.id].ok) t+=`　- ${stripTags(it.q).slice(0,50)} → ${it.a[0]}\n`; }); }));
+  if(!ni) t+="（なし）\n";
+  t+=`\n■弱点の目安時間（✕1問=2分〔類似問題〕、時間がかかった1問=1分）\n`;
+  plan.sort((a,b)=>b[1]-a[1]).forEach(p=>t+=`${p[0]}：${p[1]}分（✕・時間切れ${p[2]}問・スピード${p[3]}問）\n`);
+  t+=`合計：${plan.reduce((a,p)=>a+p[1],0)}分\n`;
+  const raw={ created:now.toISOString(), blocks:store.blocks, explain:store.explain, sub:store.sub,
+    items:done.map(it=>Object.assign({id:it.id, ref:it.ref||"", subj:it._subj, q:stripTags(it.q||"").slice(0,80)}, store.res[it.id])) };
+  t+=`\n----- データ（Claude読み取り用） -----\n`+JSON.stringify(raw);
+  return t;
+}
+function analysisName(){ const n=new Date(), z=x=>String(x).padStart(2,"0");
+  return `期末_分析_${n.getFullYear()}${z(n.getMonth()+1)}${z(n.getDate())}_${z(n.getHours())}${z(n.getMinutes())}.txt`; }
+function saveLocal(){
+  const blob=new Blob([analysisText()],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=analysisName(); document.body.appendChild(a); a.click(); a.remove();
+  $("saveMsg").innerHTML="✔ この端末の「ダウンロード」に保存しました。";
+}
+async function saveDrive(){
+  const text=analysisText();
+  if(window.showSaveFilePicker){
+    try{
+      const h=await showSaveFilePicker({ suggestedName:analysisName(), types:[{description:"テキスト",accept:{"text/plain":[".txt"]}}] });
+      const w=await h.createWritable(); await w.write(text); await w.close();
+      $("saveMsg").innerHTML="✔ 保存しました。Googleドライブの「kimatsu」フォルダを選んでいれば、ドライブに入っています。"; return;
+    }catch(e){ if(e.name==="AbortError") return; }
+  }
+  saveLocal(); $("saveMsg").innerHTML+="<br>この端末では保存先を選べないので、ダウンロードしたファイルをGoogleドライブの「kimatsu」フォルダに入れてください。";
+}
+function openSummary(){
+  const rows=Object.keys(DAYS).filter(d=>d!=="wed").map(d=>`<tr><th colspan="3">${DAYS[d].label}</th></tr>`+blocksOf(d).filter(b=>b.type!=="break").map(b=>{const s=store.blocks[b.id];
+    return `<tr><td>${b.title}</td><td>${s?.done?(s.score||"済"):"—"}</td><td>${s?.done?Math.round((s.sec||0)/60)+"分":""}</td></tr>`;}).join("")).join("");
+  modal(`<div style="font-size:18px;font-weight:800;margin-bottom:8px">記録</div><div style="max-height:45vh;overflow:auto"><table class="sum">${rows}</table></div>
+    <div class="lead" style="margin-top:10px">毎日の最後に、分析ファイルを保存してください（Googleドライブの「kimatsu」フォルダへ）。次の日の時間割と類似問題は、これを見て組み直します。</div>
+    <div class="tools"><button class="btn" onclick="saveLocal()">💾 この端末に保存</button><button class="btn" onclick="saveDrive()">☁ Googleドライブに保存</button></div>
+    <div class="lead" id="saveMsg" style="margin-top:6px;color:var(--sub)"></div>
+    <div class="tools"><button class="btn sm" onclick="resetAll()">記録を消す</button><div class="sp"></div><button class="btn primary" onclick="closeModal()">閉じる</button></div>`);
+}
+function sendLine(){ location.href="https://line.me/R/msg/text/?"+encodeURIComponent(summaryText()); }
+function resetAll(){ modal(`<div style="font-size:18px;font-weight:800;margin-bottom:8px">期末対策の記録をすべて消しますか？</div>
+  <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">やめる</button><button class="btn ng" onclick="doReset()">消す</button></div>`); }
+function doReset(){ store.res={}; store.blocks={}; store.explain={}; store.sub={}; save(); closeModal(); renderHome(); }
+function openSettings(){
+  modal(`<div style="font-size:18px;font-weight:800">設定</div>
+    <label>Gemini APIキー（空欄なら手書き一問一答のキーを使う／なければ自己採点）<input type="text" id="sKey" value="${esc(store.key||"")}" placeholder="${apiKey()?"手書き一問一答のキーを使用中":"未設定"}"></label>
+    <label>モデル<input type="text" id="sModel" value="${esc(store.model||"")}" placeholder="gemini-flash-latest"></label>
+    <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">やめる</button><button class="btn primary" onclick="saveSettings()">保存</button></div>`);
+}
+function saveSettings(){ store.key=$("sKey").value.trim(); store.model=$("sModel").value.trim()||"gemini-flash-latest"; save(); closeModal(); renderHome(); }
+function modal(h){ $("modalBody").innerHTML=h; $("modal").classList.remove("hidden"); }
+function closeModal(){ $("modal").classList.add("hidden"); }
+
+renderHome();
+</script>
+</body>
+</html>
