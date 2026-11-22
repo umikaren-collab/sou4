@@ -330,6 +330,7 @@ function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContex
 function setProg(){
   const tot = (run.round===2 ? run.queue.length : run.items.length)||1;
   $("rProg").style.width = Math.round(Math.min(run.idx,tot)/tot*100)+"%";
+  if(run.round===2){ $("rProg").style.width=Math.round(Math.min(1,(Date.now()-run.t0)/1000/(run.b.min*60))*100)+"%"; $("rCount").textContent=`のこり時間の練習（あと${(run.xq||[]).length+1}問）`; return; }
   $("rCount").textContent = run.items.length ? `${Math.min(run.idx+1,tot)}/${tot}${run.round>1?"（2回目）":""}` : "";
 }
 function showIntro(){
@@ -398,38 +399,119 @@ function taskDone(k){ (run.b.subs||[]).forEach(id=>{ if(k>(store.sub[id]||0)) st
 function curItem(){ return run.round===1 ? run.items[run.idx] : run.queue[run.idx]; }
 function nextItem(){
   try{ speechSynthesis.cancel(); }catch(e){}
-  const list = run.round===1 ? run.items : run.queue;
-  if(run.idx < list.length && (Date.now()-run.t0)/1000 >= run.b.min*60 && run.b.type!=="explain"){
-    if(run.round===1 && run.b.type!=="weak" && run.b.type!=="mix"){
+  const el=(Date.now()-run.t0)/1000, lim=run.b.min*60;
+  if(run.round===2){                       /* のこり時間の練習 */
+    if(el>=lim){ run.timeUp2=true; return endExtra(); }
+    if(run.idx < run.queue.length) return showItem();
+    return extraNext();
+  }
+  const list = run.items;
+  if(run.idx < list.length && el >= lim && run.b.type!=="explain"){
+    if(run.b.type!=="weak" && run.b.type!=="mix" && run.b.type!=="weak-all"){
       list.slice(run.idx).forEach(it=>{ if(!store.res[it.id]||store.res[it.id].untried) store.res[it.id]={ ok:false, untried:true, day:run.b.day, subj:run.b.subj, ts:Date.now() }; });
       run.untried=list.length-run.idx; save();
     }
-    run.timeUp=true; run.idx=list.length; run.wrongNow=run.round===1?[]:run.wrongNow;
+    run.timeUp=true; run.idx=list.length;
   }
   if(run.idx >= list.length){
-    /* 1回目でまちがえた問題を、ブロックの残り時間のぶんだけもう一度 */
-    if(run.round===1 && run.wrongNow && run.wrongNow.length && run.b.type!=="explain" && run.b.type!=="mix"){
-      const left = run.b.min*60 - (Date.now()-run.t0)/1000;
-      const per = Math.max(30, run.b.min*60/Math.max(1,run.items.length));
-      const n = Math.min(run.wrongNow.length, Math.floor(left/per));
-      const carry = run.wrongNow.length - Math.max(0,n);
-      if(n>0){
-        run.round=2; run.queue=run.wrongNow.slice(0,n).map(vv); run.idx=0; run.carry=run.wrongNow.slice(n); run.wrongNow=[];
-        $("stage").innerHTML = `<div class="card"><div class="lead"><b>のこり時間で、まちがえた ${n} 問の類似問題。</b><br>数字や聞き方が変わっています。解説を思い出して書こう。${carry?`<br>のこり ${carry} 問は「弱点」タブにまわします。`:""}<br>時間が来たら、とちゅうでも終わります。</div></div>
-          <div class="tools"><div class="sp"></div><button class="btn primary" onclick="showItem()">2回目へ</button></div>`;
-        hidePad(); return;
-      }
-      run.carry=run.wrongNow; run.wrongNow=[];
-    }
+    if(!run.timeUp && run.b.type!=="explain" && run.b.type!=="mix" && lim-el>=60) return startExtra();
     return finishBlock(run.n ? Math.round(run.ok/run.n*100) : null);
   }
   showItem();
+}
+
+/* ---------- のこり時間の使い方 ----------
+   ① まちがえた問題：解説を読む → 類似問題（できるまで。2回目からはAIで新しい類似問題）
+   ② 時間がかかった問題：もう一度（速く解けるか）
+   ③ ほかのコマの「まだ✕」：テストが近い教科から
+   ④ それでも余ったら休けい */
+function testRank(sj){ const i=TEST.findIndex(t=>t[1].includes(sj)); return i<0?9:i; }
+function rushCheck(){
+  if(!run.times||run.times.length<6||!run.n) return "";
+  const acc=run.ok/run.n, avg=run.times.reduce((s,x)=>s+x.sec,0)/run.times.length;
+  return (acc<0.7 && avg<run.per*0.5) ? `⚠ <b>急ぎすぎかも。</b>正解は${Math.round(acc*100)}%、1問平均${Math.round(avg)}秒（目安${run.per}秒）。<b>式や理由を書いてから</b>答えよう。` : "";
+}
+function startExtra(){
+  const ids=new Set(run.items.map(x=>x.id));
+  const base=id=>run.items.find(x=>x.id===id)||allItems().find(x=>x.id===id);
+  const fix=(run.wrongNow||[]).map(it=>({phase:"fix", base:base(it.id)||it, tries:1, review:true}));
+  const slow=(run.times||[]).filter(x=>x.ok && x.sec>run.per*1.5).map(x=>({phase:"speed", base:base(x.id), tries:1})).filter(t=>t.base);
+  const other=remaining(it=>!ids.has(it.id)).sort((p,q)=>testRank(p._subj)-testRank(q._subj)).slice(0,40)
+     .map(it=>({phase:"other", base:it, tries:1, untried:!!store.res[it.id].untried}));
+  run.xq=fix.concat(slow,other); run.xs={fix:fix.length, fixed:0, speed:slow.length, other:other.length, otherOk:0, n:0};
+  run.wrongNow=[]; run.round=2; run.queue=[]; run.idx=0;
+  const left=Math.floor((run.b.min*60-(Date.now()-run.t0)/1000)/60), rush=rushCheck();
+  hidePad();
+  if(!run.xq.length){
+    $("stage").innerHTML=`<div class="card"><div class="lead"><b>全部できました！</b> のこり約${left}分は休けいにしよう。目を休めて、水を飲む。${rush?`<div class="hintbox" style="margin-top:8px">${rush}</div>`:""}</div></div>
+      <div class="tools"><div class="sp"></div><button class="btn primary" onclick="endExtra()">終わる</button></div>`;
+    return;
+  }
+  $("stage").innerHTML=`<div class="card"><div style="font-size:18px;font-weight:800;margin-bottom:6px">のこり約${left}分。時間まで続けよう</div>
+    ${rush?`<div class="hintbox" style="margin-bottom:8px">${rush}</div>`:""}
+    <div class="lead">① まちがえた <b>${fix.length}問</b>：解説を読んでから類似問題。できるまで出ます。<br>
+    ② 時間がかかった <b>${slow.length}問</b>：もう一度、速く。<br>
+    ③ ほかのコマの まだ✕ <b>${other.length}問</b>：テストが近い教科から。<br>
+    時間が来たら、とちゅうでも終わります。全部できたら残りは休けい。</div></div>
+    <div class="tools"><div class="sp"></div><button class="btn primary" onclick="extraNext()">はじめる</button></div>`;
+}
+function extraNext(){
+  if((Date.now()-run.t0)/1000 >= run.b.min*60){ run.timeUp2=true; return endExtra(); }
+  const t=run.xq.shift();
+  if(!t){ run.allDone=true; return endExtra(); }
+  run.cur=t;
+  if(t.review) return showReview(t);
+  if(t.phase==="speed" || t.untried) return askX(Object.assign({}, t.base, {_vk:undefined}));
+  return askX(vv(t.base));
+}
+function askX(it){ run.queue=[it]; run.idx=0; setProg(); showItem(); }
+function showReview(t){
+  hidePad(); const b=t.last||t.base;
+  $("stage").innerHTML=`<div class="card"><div class="ref">${t.phase==="fix"?"① まちがえた問題":"③ まだ✕の問題"}のふりかえり${t.tries>1?`（${t.tries}回目）`:""}</div>
+    <div class="qtext">${b.q}</div>
+    <div class="res ng" style="margin-top:8px"><div class="row"><b>正解</b>${esc(b.a[0])}</div>${t.read?`<div class="row"><b>自分の答え</b>${esc(t.read)}</div>`:""}<div class="row">${b.exp||""}</div></div>
+    <div class="lead" style="margin-top:8px">どこがちがったか、ひとこと言えたら類似問題へ。</div></div>
+    <div class="tools"><div class="sp"></div><button class="btn primary" id="revGo" onclick="goReview()">わかった → 類似問題へ</button></div>`;
+  setProg();
+}
+async function goReview(){
+  const t=run.cur; let it=vv(t.base);
+  const plain = it._vk==null || it._vk===(t.base.v||[]).length;   /* 用意した類似問題を使いきった */
+  if((t.tries>=2 || plain) && apiKey()){
+    const g=$("revGo"); if(g){ g.disabled=true; g.innerHTML=`<span class="spinner"></span>類似問題を作っています…`; }
+    try{ it=await genVariant(t.base, t.last); }catch(e){ /* 作れなければ用意した問題 */ }
+  }
+  askX(it);
+}
+async function genVariant(base, prev){
+  const p=`中学3年の定期テスト対策アプリ。次の問題と同じ力をためす類似問題を1つ作る。数字・語句・聞き方を変える。答えが1つに決まるように。中学生が手書きで答えられる短い答えにする。\n元の問題:${stripTags(base.q)}\n元の正解:${base.a.join("／")}\n元の解説:${stripTags(base.exp||"")}\n${prev&&prev!==base?`前に出した類似問題（これとも変える）:${stripTags(prev.q)}\n`:""}乱数:${Math.random().toString(36).slice(2,7)}\nJSONのみ:{"q":"問題文","a":"正解","exp":"解説60字以内"}`;
+  const r=await callGemini(p,null,500);
+  if(!r||!r.q||!r.a) throw new Error("作成失敗");
+  return Object.assign({}, base, {q:esc(r.q), a:[String(r.a)], exp:esc(r.exp||""), m:"ai", rule:"正解と同じ内容なら正解。表記のゆれ・同じ意味の言いかえは可。", hint:undefined, v:undefined, id:base.id, _vk:undefined, _ai:true});
+}
+function afterExtra(t, ok, it){
+  run.xs.n++;
+  if(t.phase==="fix"){ if(ok){ run.xs.fixed++; return; } if(t.tries<4) run.xq.unshift({phase:"fix", base:t.base, tries:t.tries+1, review:true, last:it, read:run.last&&run.last.read}); return; }
+  if(t.phase==="other"){ if(ok){ run.xs.otherOk++; return; } if(t.tries<2) run.xq.splice(Math.min(3,run.xq.length),0,{phase:"other", base:t.base, tries:t.tries+1, review:true, last:it, read:run.last&&run.last.read}); }
+}
+function endExtra(){
+  const s=run.xs; let m="";
+  if(s){ m=`のこり時間の練習：${s.n}問`;
+    if(s.fix) m+=`／まちがえた${s.fix}問のうち <b>${s.fixed}問</b> 直った`;
+    if(s.otherOk) m+=`／ほかの まだ✕ を <b>${s.otherOk}問</b> 直した`;
+    if(run.allDone){ const left=Math.max(0,Math.floor((run.b.min*60-(Date.now()-run.t0)/1000)/60)); m+=`<br>全部できました！${left?`のこり約${left}分は休けい。`:""}`; }
+    else if(run.timeUp2) m+=`<br>時間になったので終わりにしました。残りは「弱点」タブへ。`; }
+  run.xsum=m; run.round=1;
+  return finishBlock(run.n ? Math.round(run.ok/run.n*100) : null);
 }
 function showItem(){
   const it=curItem(); setProg();
   run.qt0=Date.now(); run.answered=false; tick();
   if(run.b.type==="explain") return showExplain(it);
-  let h = `<div class="card">`;
+  let h = "";
+  if(run.rushMsg){ h += `<div class="hintbox" style="margin-bottom:8px">${run.rushMsg}</div>`; run.rushMsg=null; }
+  if(run.round===2 && run.cur) h += `<div class="ref" style="margin-bottom:4px">${{fix:"① まちがえた問題の類似問題",speed:"② もう一度・速く",other:"③ ほかのコマの まだ✕"}[run.cur.phase]}${curItem()._ai?"（AIが作った類似問題）":""}</div>`;
+  h += `<div class="card">`;
   if(it.ref) h += `<div class="ref">問題用紙 ${it.ref}</div>`;
   if(it.say){
     run.plays=0;
@@ -513,12 +595,13 @@ function finishBlock(score){
     const avg=Math.round(run.times.reduce((a,x)=>a+x.sec,0)/run.times.length);
     const slow=run.times.filter(x=>x.sec>run.per*1.5).length;
     const prevBest=store.best?.[b.id];
-    msg += `<br>1問の平均 <b>${avg}秒</b>（目安 ${run.per}秒）${avg<=run.per?" ✔ 目安クリア":""}`;
+    msg += `<br>1問の平均 <b>${avg}秒</b>（目安 ${run.per}秒）${avg<=run.per&&!rushCheck()?" ✔ 目安クリア":""}`;
     if(slow) msg += `<br>目安の1.5倍以上かかった問題 ${slow}問 → スピード練習にまわします`;
     if(prevBest) msg += `<br>前回の平均 ${prevBest}秒 → 今回 ${avg}秒 ${avg<prevBest?"（速くなった！）":""}`;
     store.best=store.best||{}; store.best[b.id]=prevBest?Math.min(prevBest,avg):avg; save();
   }
   if(left) msg += `<br>まだ✕・時間切れの問題 <b>${left}問</b> は「弱点」タブへ（✕は類似問題で出ます）。`;
+  if(run.xsum) msg += `<br><br>${run.xsum}`; { const r=rushCheck(); if(r) msg += `<div class="hintbox" style="margin-top:8px;text-align:left">${r}</div>`; }
   $("stage").innerHTML = `<div class="card" style="text-align:center">
     <div class="lead">${b.title}</div>${score!=null?`<div class="big">${score}%</div>`:""}
     <div class="lead">${msg}<br>かかった時間：${Math.round(sec/60)}分（目安 ${b.min}分）</div>
@@ -702,6 +785,8 @@ function record(ok){
   else
     store.res[it.id]=Object.assign({}, prev||{day,subj:run.b.subj}, { ok: ok || false, fixed: ok, untried:false, ts:Date.now(), tries:(prev?.tries||0)+1, vi: it._vk!=null ? it._vk+1 : (prev?.vi||0) });
   if(run.round===1 && prev && prev.untried && run.b.type==="weak"){ store.res[it.id].wrong1=!ok; store.res[it.id].sec=qs; store.res[it.id].per=run.per; }
+  if(run.round===2 && run.cur){ afterExtra(run.cur, ok, it); run.cur=null; }
+  if(run.round===1 && run.n===6 && !run.rushShown){ const r=rushCheck(); if(r){ run.rushShown=true; run.rushMsg=r; } }
   save(); run.idx++; nextItem();
 }
 

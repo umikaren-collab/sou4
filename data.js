@@ -1121,4 +1121,4 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 10:10", note:"授業でやる提出物（暗唱カード・点描画）を必ず完了表示に" };
+const DATAVER = { at:"11/22 10:40", note:"のこり時間の使い方を追加（解説→類似問題をできるまで・遅かった問題・ほかのまだ✕・急ぎすぎの声かけ）" };
