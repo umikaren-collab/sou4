@@ -1121,4 +1121,4 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 9:50", note:"設定に「記録を書き出す・読み込む」を追加（新しい版への引き継ぎ用）" };
+const DATAVER = { at:"11/22 10:00", note:"設定にAPIキー取得ページのリンクを追加" };

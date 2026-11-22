@@ -1267,7 +1267,7 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 9:50", note:"設定に「記録を書き出す・読み込む」を追加（新しい版への引き継ぎ用）" };
+const DATAVER = { at:"11/22 10:00", note:"設定にAPIキー取得ページのリンクを追加" };
 
 </script>
 <script>
@@ -1935,6 +1935,7 @@ function doReset(){ store.res={}; store.blocks={}; store.explain={}; store.sub={
 function openSettings(){
   modal(`<div style="font-size:18px;font-weight:800">設定</div>
     <label>Gemini APIキー（空欄なら手書き一問一答のキーを使う／なければ自己採点）<input type="text" id="sKey" value="${esc(store.key||"")}" placeholder="${apiKey()?"手書き一問一答のキーを使用中":"未設定"}"></label>
+    <div style="font-size:13px;margin:-2px 0 8px">🔑 キーの取得・確認：<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio（APIキーのページ）</a><br><span style="color:#555">Googleアカウントでログイン →「APIキーを作成」→ 表示されたキーをコピーして上の欄に貼り付け →「保存」</span></div>
     <label>モデル<input type="text" id="sModel" value="${esc(store.model||"")}" placeholder="gemini-flash-latest"></label>
     <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">やめる</button><button class="btn primary" onclick="saveSettings()">保存</button></div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid #ddd">
