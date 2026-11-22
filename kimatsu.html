@@ -1267,7 +1267,7 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 10:55", note:"やり直したコマの前の点数を残す（64%→85%のように表示）" };
+const DATAVER = { at:"11/22 23:55", note:"2回以上まちがえた問題は、直っても翌日の弱点のコマでもう一度出す" };
 
 </script>
 <script>
@@ -1305,7 +1305,7 @@ function renderHome(){
   $("tabs").innerHTML = Object.keys(DAYS).map(d=>{
     const bs=blocksOf(d).filter(b=>b.slot!=null), done=bs.filter(b=>store.blocks[b.id]?.done).length;
     return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('${d}')">${DAYS[d].label}<small>${bs.length}コマ・${done} 終了</small></button>`;
-  }).join("") + `<button class="tab ${store.day==="weak"?"on":""}" onclick="pickDay('weak')">弱点<small>まだ✕ ${remaining().length}問</small></button>`
+  }).join("") + `<button class="tab ${store.day==="weak"?"on":""}" onclick="pickDay('weak')">弱点<small>まだ✕ ${remaining().length}問${recheckItems().length?`・もう一度 ${recheckItems().length}`:""}</small></button>`
     + `<button class="tab ${store.day==="sub"?"on":""}" onclick="pickDay('sub')">提出物<small>完了 ${SUBS.filter(x=>(store.sub[x.id]||0)>=2).length}/${SUBS.length}</small></button>`;
   renderCount();
   if(store.day==="weak") return renderWeak();
@@ -1324,7 +1324,7 @@ function renderHome(){
     const label = st.done ? scoreLabel(st) : (i===fo ? "▶ つぎ" : "");
     return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
       <div class="tm"><b>${fmtClock(start)}〜</b>${b.min}分</div>
-      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}${b.type==="weak"?`・まだ✕ ${remaining(it=>it._subj===b.subj).length}問`:""}${b.type==="explain"?"　👪 おうちの人が聞く":""}${b.type==="task"&&b.subs&&b.subs.length?"　"+b.subs.map(id=>SUBST[store.sub[id]||0]).join("・"):""}${b.type==="weak-all"?`・まだ✕ ${remaining().length}問`:""}</small></div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}${b.type==="weak"?`・まだ✕ ${remaining(it=>it._subj===b.subj).length}問${recheckItems(it=>it._subj===b.subj).length?`＋もう一度 ${recheckItems(it=>it._subj===b.subj).length}問`:""}`:""}${b.type==="explain"?"　👪 おうちの人が聞く":""}${b.type==="task"&&b.subs&&b.subs.length?"　"+b.subs.map(id=>SUBST[store.sub[id]||0]).join("・"):""}${b.type==="weak-all"?`・まだ✕ ${remaining().length}問${recheckItems().length?`＋もう一度 ${recheckItems().length}問`:""}`:""}</small></div>
       <div class="st">${label}</div>
       <button class="btn sm ${st.done?"":"primary"}" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button>
     </div>`;
@@ -1638,6 +1638,7 @@ function showItem(){
   let h = "";
   if(run.rushMsg){ h += `<div class="hintbox" style="margin-bottom:8px">${run.rushMsg}</div>`; run.rushMsg=null; }
   if(run.round===2 && run.cur) h += `<div class="ref" style="margin-bottom:4px">${{fix:"① まちがえた問題の類似問題",speed:"② もう一度・速く",other:"③ ほかのコマの まだ✕"}[run.cur.phase]}${curItem()._ai?"（AIが作った類似問題）":""}</div>`;
+  if(it._rc) h += `<div class="ref" style="margin-bottom:4px">🔁 もう一度（前に2回以上まちがえた問題。できたら卒業）${(store.res[it.id]||{}).h?"　これまで "+store.res[it.id].h:""}</div>`;
   h += `<div class="card">`;
   if(it.ref) h += `<div class="ref">問題用紙 ${it.ref}</div>`;
   if(it.say){
@@ -1700,10 +1701,16 @@ function allItems(){
   return out;
 }
 function remaining(filter){ return allItems().filter(it=>store.res[it.id] && !store.res[it.id].ok && (!filter||filter(it))); }
+/* 2回以上まちがえた問題は、○になっても翌日以降の弱点のコマでもう一度（定着の確認） */
+function nX(h){ return (String(h||"").match(/✕/g)||[]).length; }
+function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function recheckItems(filter){ const t0=todayStart();
+  return allItems().filter(it=>{ const r=store.res[it.id]; return r && r.ok && !r.rc && nX(r.h)>=2 && (r.ts||0)<t0 && (!filter||filter(it)); })
+    .map(it=>Object.assign(vv(it),{_rc:true})); }
 function mixItems(b){
   /* その日にまちがえて、まだ直っていない問題だけ（月曜は月曜分、火曜は火曜分） */
-  if(b.type==="weak") return remaining(it=>it._subj===b.subj).map(it=>store.res[it.id].untried?it:vv(it));
-  if(b.type==="weak-all") return remaining().map(it=>store.res[it.id].untried?it:vv(it));
+  if(b.type==="weak") return remaining(it=>it._subj===b.subj).map(it=>store.res[it.id].untried?it:vv(it)).concat(recheckItems(it=>it._subj===b.subj));
+  if(b.type==="weak-all") return remaining().map(it=>store.res[it.id].untried?it:vv(it)).concat(recheckItems());
   return remaining(it=>(store.res[it.id].day||it._day)===b.day);
 }
 
@@ -1921,6 +1928,8 @@ function record(ok){
   if(run.round===2 && run.cur){ afterExtra(run.cur, ok, it); run.cur=null; }
   if(run.round===1 && run.n===6 && !run.rushShown){ const r=rushCheck(); if(r){ run.rushShown=true; run.rushMsg=r; } }
   if(store.res[it.id]) store.res[it.id].h=((prev&&prev.h)||"").concat(ok?"〇":"✕").slice(-12);
+  if(store.res[it.id] && (run.b.type==="weak"||run.b.type==="weak-all")){ if(it._rc) store.res[it.id].rc = ok ? Date.now() : null; }
+  if(store.res[it.id] && !ok) store.res[it.id].rc=null;
   save(); run.idx++; nextItem();
 }
 
@@ -1936,7 +1945,7 @@ function summaryText(){
       t+=`・${b.title}：${s?.done?(s.score||"済")+`（${Math.round((s.sec||0)/60)}分${best?`・1問平均${best}秒`:""}）`:"未"}\n`; });
   });
   const rem=remaining();
-  t+=`■弱点：まだ✕ ${rem.length}問\n`;
+  t+=`■弱点：まだ✕ ${rem.length}問／もう一度（2回以上✕で直った問題）${recheckItems().length}問\n`;
   ["sugaku","rika","eigo","shakai","kokugo"].forEach(sj=>{ const r=rem.filter(it=>it._subj===sj); if(r.length)
     t+=`${SUBJ[sj]}${r.length}問：${r.map(it=>it.ref?it.ref.replace(/^\S+ /,""):it.id).join("、")}\n`; });
   const slow=allItems().filter(it=>{const r=store.res[it.id]; return r && r.ok && r.sec && r.per && r.sec>r.per*1.5;});

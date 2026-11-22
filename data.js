@@ -1121,4 +1121,4 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 10:55", note:"やり直したコマの前の点数を残す（64%→85%のように表示）" };
+const DATAVER = { at:"11/22 23:55", note:"2回以上まちがえた問題は、直っても翌日の弱点のコマでもう一度出す" };
