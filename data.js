@@ -1121,4 +1121,4 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 10:00", note:"設定にAPIキー取得ページのリンクを追加" };
+const DATAVER = { at:"11/22 10:10", note:"授業でやる提出物（暗唱カード・点描画）を必ず完了表示に" };

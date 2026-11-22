@@ -150,7 +150,7 @@ table.sum td,table.sum th{padding:7px 6px;border-bottom:1px solid var(--line);te
    ============================================================ */
 const STORE_KEY = "sou4-kimatsu-2026-11";
 let store = { key:"", model:"gemini-flash-latest", res:{}, blocks:{}, explain:{}, sub:{}, imp:{}, revs:[], day:"fri" };
-function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"null"); if(s) store=Object.assign(store,s); }catch(e){} store.imp=store.imp||{}; store.revs=store.revs||[]; SUBS.forEach(x=>{ if(x.preset!=null && store.sub[x.id]==null) store.sub[x.id]=x.preset; }); }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"null"); if(s) store=Object.assign(store,s); }catch(e){} store.imp=store.imp||{}; store.revs=store.revs||[]; SUBS.forEach(x=>{ if(x.preset!=null && (store.sub[x.id]==null || (x.noimp && (store.sub[x.id]||0)<x.preset))) store.sub[x.id]=x.preset; }); }
 function revBlocks(){ return SUBREV.concat(store.revs||[]); }
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
 /* APIキーは、同じサイトの手書き一問一答（kijutsu250）で入れたものを使う */
@@ -849,7 +849,7 @@ function importRecord(inp){
   };
   r.readAsText(f);
 }
-function load2(){ store.imp=store.imp||{}; store.revs=store.revs||[]; store.sub=store.sub||{}; SUBS.forEach(x=>{ if(x.preset!=null && store.sub[x.id]==null) store.sub[x.id]=x.preset; }); }
+function load2(){ store.imp=store.imp||{}; store.revs=store.revs||[]; store.sub=store.sub||{}; SUBS.forEach(x=>{ if(x.preset!=null && (store.sub[x.id]==null || (x.noimp && (store.sub[x.id]||0)<x.preset))) store.sub[x.id]=x.preset; }); }
 function saveSettings(){ store.key=$("sKey").value.trim(); store.model=$("sModel").value.trim()||"gemini-flash-latest"; save(); closeModal(); renderHome(); }
 function modal(h){ $("modalBody").innerHTML=h; $("modal").classList.remove("hidden"); }
 function closeModal(){ $("modal").classList.add("hidden"); }
