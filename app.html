@@ -810,8 +810,45 @@ function openSettings(){
   modal(`<div style="font-size:18px;font-weight:800">設定</div>
     <label>Gemini APIキー（空欄なら手書き一問一答のキーを使う／なければ自己採点）<input type="text" id="sKey" value="${esc(store.key||"")}" placeholder="${apiKey()?"手書き一問一答のキーを使用中":"未設定"}"></label>
     <label>モデル<input type="text" id="sModel" value="${esc(store.model||"")}" placeholder="gemini-flash-latest"></label>
-    <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">やめる</button><button class="btn primary" onclick="saveSettings()">保存</button></div>`);
+    <div class="tools"><div class="sp"></div><button class="btn" onclick="closeModal()">やめる</button><button class="btn primary" onclick="saveSettings()">保存</button></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #ddd">
+      <div style="font-weight:800;margin-bottom:4px">記録の引き継ぎ</div>
+      <div style="font-size:13px;color:#555;margin-bottom:8px">新しい版のアプリに入れかえる前に「書き出す」でファイルを保存。新しい版を開いたら「読み込む」でそのファイルを選ぶと、記録（終わったコマ・✕の問題・提出物・取り込み）がそのまま続きから使えます。</div>
+      <div class="tools"><button class="btn" onclick="exportRecord()">📤 記録を書き出す</button><button class="btn" onclick="$('recFile').click()">📥 記録を読み込む</button></div>
+      <input type="file" id="recFile" accept=".json,application/json,text/plain" style="display:none" onchange="importRecord(this)">
+      <div id="recMsg" style="font-size:13px;margin-top:6px"></div>
+    </div>`);
 }
+function exportRecord(){
+  const data=Object.assign({}, store); delete data.key;
+  const out={app:"sou4-kimatsu", ver:DATAVER.at, savedAt:new Date().toISOString(), store:data};
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  const name=`期末対策_記録_${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.json`;
+  const blob=new Blob([JSON.stringify(out)],{type:"application/json"});
+  const url=URL.createObjectURL(blob), el=document.createElement("a");
+  el.href=url; el.download=name; document.body.appendChild(el); el.click(); el.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  const m=$("recMsg"); if(m) m.innerHTML=`✅ 「${esc(name)}」を保存しました（ダウンロードフォルダ）。`;
+}
+function importRecord(inp){
+  const f=inp.files&&inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ const m=$("recMsg");
+    try{ const j=JSON.parse(r.result); const s=j.store||j;
+      if(!s||typeof s!=="object"||!("blocks" in s||"res" in s)) throw 0;
+      const key=store.key, model=store.model;
+      store=Object.assign({res:{},blocks:{},explain:{},sub:{},imp:{},revs:[]}, s);
+      if(key) store.key=key; if(!store.model) store.model=model;
+      load2(); save();
+      const n=Object.values(store.blocks||{}).filter(x=>x&&x.done).length;
+      if(m) m.innerHTML=`✅ 読み込みました（終わったコマ ${n}・${esc(j.ver?"保存した版 "+j.ver:"")}）。`;
+      renderHome();
+    }catch(e){ if(m) m.innerHTML="⚠ このファイルは読み込めませんでした。「記録を書き出す」で作ったファイルを選んでください。"; }
+    inp.value="";
+  };
+  r.readAsText(f);
+}
+function load2(){ store.imp=store.imp||{}; store.revs=store.revs||[]; store.sub=store.sub||{}; SUBS.forEach(x=>{ if(x.preset!=null && store.sub[x.id]==null) store.sub[x.id]=x.preset; }); }
 function saveSettings(){ store.key=$("sKey").value.trim(); store.model=$("sModel").value.trim()||"gemini-flash-latest"; save(); closeModal(); renderHome(); }
 function modal(h){ $("modalBody").innerHTML=h; $("modal").classList.remove("hidden"); }
 function closeModal(){ $("modal").classList.add("hidden"); }
