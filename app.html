@@ -195,7 +195,7 @@ function renderHome(){
     const i=bs.indexOf(b);
     const st = store.blocks[b.id]||{};
     const start=t; t+=b.min; if(st.done) doneMin+=b.min;
-    const label = st.done ? (st.score!=null ? `済 ${st.score}` : "済") : (i===fo ? "▶ つぎ" : "");
+    const label = st.done ? scoreLabel(st) : (i===fo ? "▶ つぎ" : "");
     return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
       <div class="tm"><b>${fmtClock(start)}〜</b>${b.min}分</div>
       <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}${b.type==="weak"?`・まだ✕ ${remaining(it=>it._subj===b.subj).length}問`:""}${b.type==="explain"?"　👪 おうちの人が聞く":""}${b.type==="task"&&b.subs&&b.subs.length?"　"+b.subs.map(id=>SUBST[store.sub[id]||0]).join("・"):""}${b.type==="weak-all"?`・まだ✕ ${remaining().length}問`:""}</small></div>
@@ -213,7 +213,7 @@ function renderHome(){
       return `<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}">
       <div class="tm"><b>任意</b>${b.min}分</div>
       <div class="tt">${b.title}<small>${SUBJ[b.subj]}${b.items?`・${b.items.length}問`:""}</small></div>
-      <div class="st">${st.done?(st.score?`済 ${st.score}`:"済"):""}</div>
+      <div class="st">${scoreLabel(st)}</div>
       <button class="btn sm" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button></div>`; }).join("");
   }
   $("blockList").innerHTML = html;
@@ -249,7 +249,7 @@ function renderWeak(){
     html+=`<div class="slothead">📸 提出物のまちがい直し</div>`;
     revBlocks().forEach(b=>{ const st=store.blocks[b.id]||{};
       html+=`<div class="blk ${st.done?"done":""}" style="--c:${color(b.subj)}"><div class="tm"><b>${b.items.length}問</b>目安${b.min}分</div>
-      <div class="tt">${b.title}<small>${SUBJ[b.subj]}</small></div><div class="st">${st.done?(st.score?`済 ${st.score}`:"済"):""}</div>
+      <div class="tt">${b.title}<small>${SUBJ[b.subj]}</small></div><div class="st">${scoreLabel(st)}</div>
       <button class="btn sm ${st.done?"":"primary"}" onclick="startBlock('${b.id}')">${st.done?"もう一度":"はじめる"}</button></div>`; });
   }
   $("blockList").innerHTML=html; $("dayBar").style.width="0%";
@@ -281,6 +281,7 @@ function renderSub(){
   $("modeNote").innerHTML="状態は分析ファイルにも入ります。";
 }
 function setSub(id,k){ store.sub[id]=k; save(); renderHome(); }
+function scoreLabel(st){ if(!st||!st.done) return ""; const hs=(st.hist||[]).map(h=>h.score).filter(Boolean).slice(-2); if(!st.score) return "済"; return hs.length?`済 ${hs.join("→")}→<b>${st.score}</b>`:`済 ${st.score}`; }
 function firstOpen(bs){ const i=bs.findIndex(b=>!store.blocks[b.id]?.done); return i; }
 function pickDay(d){ store.day=d; save(); renderHome(); }
 
@@ -469,7 +470,7 @@ function showReview(t){
   hidePad(); const b=t.last||t.base;
   $("stage").innerHTML=`<div class="card"><div class="ref">${t.phase==="fix"?"① まちがえた問題":"③ まだ✕の問題"}のふりかえり${t.tries>1?`（${t.tries}回目）`:""}</div>
     <div class="qtext">${b.q}</div>
-    <div class="res ng" style="margin-top:8px"><div class="row"><b>正解</b>${esc(b.a[0])}</div>${t.read?`<div class="row"><b>自分の答え</b>${esc(t.read)}</div>`:""}<div class="row">${b.exp||""}</div></div>
+    <div class="res ng" style="margin-top:8px"><div class="row"><b>正解</b>${esc(b.a[0])}</div>${t.read?`<div class="row"><b>自分の答え</b>${esc(t.read)}</div>`:""}${(store.res[t.base.id]||{}).h?`<div class="row"><b>これまで</b>${store.res[t.base.id].h}</div>`:""}<div class="row">${b.exp||""}</div></div>
     <div class="lead" style="margin-top:8px">どこがちがったか、ひとこと言えたら類似問題へ。</div></div>
     <div class="tools"><div class="sp"></div><button class="btn primary" id="revGo" onclick="goReview()">わかった → 類似問題へ</button></div>`;
   setProg();
@@ -585,7 +586,9 @@ function finishBlock(score){
   const b=run.b, sec=Math.floor((Date.now()-run.t0)/1000);
   const sch=BLOCKS.filter(x=>x.day===b.day&&x.slot!=null), nb=sch[sch.findIndex(x=>x.id===b.id)+1];
   if(nb&&nb.type==="explain") setTimeout(()=>{try{const u=new SpeechSynthesisUtterance("つぎは説明タイム。おうちの人を呼ぼう。");u.lang="ja-JP";const v=jaVoice();if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}},400);
-  store.blocks[b.id] = { done:true, score: score!=null ? score+"%" : null, sec, ts:Date.now() }; save();
+  const prevB=store.blocks[b.id];
+  const hist=((prevB&&prevB.hist)||[]).concat(prevB&&prevB.done?[{score:prevB.score, sec:prevB.sec, ts:prevB.ts}]:[]).slice(-9);
+  store.blocks[b.id] = { done:true, score: score!=null ? score+"%" : null, sec, ts:Date.now(), hist }; save();
   clearInterval(clockTimer); hidePad(); speechSynthesis?.cancel?.(); run.qt0=null; $("qPaceBar").style.width="0%"; $("rPace").textContent="";
   const left = (b.type==="mix"||b.type==="weak") ? remaining(it=>run.items.some(x=>x.id===it.id)).length
              : (b.items||[]).filter(it=>store.res[it.id]&&!store.res[it.id].ok).length;
@@ -601,6 +604,10 @@ function finishBlock(score){
     store.best=store.best||{}; store.best[b.id]=prevBest?Math.min(prevBest,avg):avg; save();
   }
   if(left) msg += `<br>まだ✕・時間切れの問題 <b>${left}問</b> は「弱点」タブへ（✕は類似問題で出ます）。`;
+  { const hs=hist.map(h=>h.score).filter(Boolean);
+    if(hs.length && score!=null){ const d=score-parseInt(hs[hs.length-1]);
+      msg += `<br>これまで：${hs.join(" → ")} → <b>今回 ${score}%</b>${d>0?`（+${d}　上がった！）`:d<0?`（${d}）`:"（同じ）"}　${hist.length+1}回目`; }
+    else if(hist.length) msg += `<br>${hist.length+1}回目`; }
   if(run.xsum) msg += `<br><br>${run.xsum}`; { const r=rushCheck(); if(r) msg += `<div class="hintbox" style="margin-top:8px;text-align:left">${r}</div>`; }
   $("stage").innerHTML = `<div class="card" style="text-align:center">
     <div class="lead">${b.title}</div>${score!=null?`<div class="big">${score}%</div>`:""}
@@ -787,6 +794,7 @@ function record(ok){
   if(run.round===1 && prev && prev.untried && run.b.type==="weak"){ store.res[it.id].wrong1=!ok; store.res[it.id].sec=qs; store.res[it.id].per=run.per; }
   if(run.round===2 && run.cur){ afterExtra(run.cur, ok, it); run.cur=null; }
   if(run.round===1 && run.n===6 && !run.rushShown){ const r=rushCheck(); if(r){ run.rushShown=true; run.rushMsg=r; } }
+  if(store.res[it.id]) store.res[it.id].h=((prev&&prev.h)||"").concat(ok?"〇":"✕").slice(-12);
   save(); run.idx++; nextItem();
 }
 
@@ -823,7 +831,8 @@ function analysisText(){
   t+=`■ブロックの結果\n`;
   Object.keys(DAYS).forEach(d=>{ t+=`[${DAYS[d].label}]\n`;
     blocksOf(d).forEach(b=>{ const s=store.blocks[b.id];
-      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）`:"未実施"}\n`; }); });
+      const hs=(s?.hist||[]).map(h=>h.score).filter(Boolean);
+      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）${hs.length?`／これまで ${hs.join("→")}→${s.score||"済"}（${hs.length+1}回目）`:""}`:"未実施"}\n`; }); });
   t+=`\n■教科別（1回目の正答率・1問の平均時間）\n`;
   const plan=[];
   SJ.forEach(sj=>{
