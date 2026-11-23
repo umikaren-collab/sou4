@@ -1121,4 +1121,4 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/22 23:55", note:"2回以上まちがえた問題は、直っても翌日の弱点のコマでもう一度出す" };
+const DATAVER = { at:"11/23 23:50", note:"記録の読み込みを強化・のこり時間に「もう一度」の問題も出す" };

@@ -437,8 +437,9 @@ function startExtra(){
   const base=id=>run.items.find(x=>x.id===id)||allItems().find(x=>x.id===id);
   const fix=(run.wrongNow||[]).map(it=>({phase:"fix", base:base(it.id)||it, tries:1, review:true}));
   const slow=(run.times||[]).filter(x=>x.ok && x.sec>run.per*1.5).map(x=>({phase:"speed", base:base(x.id), tries:1})).filter(t=>t.base);
-  const other=remaining(it=>!ids.has(it.id)).sort((p,q)=>testRank(p._subj)-testRank(q._subj)).slice(0,40)
-     .map(it=>({phase:"other", base:it, tries:1, untried:!!store.res[it.id].untried}));
+  const rcs=recheckItems(it=>!ids.has(it.id)).map(x=>({phase:"other", base:allItems().find(y=>y.id===x.id)||x, tries:1, rc:true, _s:x._subj}));
+  const other=remaining(it=>!ids.has(it.id)).map(it=>({phase:"other", base:it, tries:1, untried:!!store.res[it.id].untried, _s:it._subj}))
+     .concat(rcs).sort((p,q)=>testRank(p._s)-testRank(q._s)).slice(0,40);
   run.xq=fix.concat(slow,other); run.xs={fix:fix.length, fixed:0, speed:slow.length, other:other.length, otherOk:0, n:0};
   run.wrongNow=[]; run.round=2; run.queue=[]; run.idx=0;
   const left=Math.floor((run.b.min*60-(Date.now()-run.t0)/1000)/60), rush=rushCheck();
@@ -452,7 +453,7 @@ function startExtra(){
     ${rush?`<div class="hintbox" style="margin-bottom:8px">${rush}</div>`:""}
     <div class="lead">① まちがえた <b>${fix.length}問</b>：解説を読んでから類似問題。できるまで出ます。<br>
     ② 時間がかかった <b>${slow.length}問</b>：もう一度、速く。<br>
-    ③ ほかのコマの まだ✕ <b>${other.length}問</b>：テストが近い教科から。<br>
+    ③ ほかのコマの まだ✕・もう一度 <b>${other.length}問</b>：テストが近い教科から。<br>
     時間が来たら、とちゅうでも終わります。全部できたら残りは休けい。</div></div>
     <div class="tools"><div class="sp"></div><button class="btn primary" onclick="extraNext()">はじめる</button></div>`;
 }
@@ -463,7 +464,7 @@ function extraNext(){
   run.cur=t;
   if(t.review) return showReview(t);
   if(t.phase==="speed" || t.untried) return askX(Object.assign({}, t.base, {_vk:undefined}));
-  return askX(vv(t.base));
+  return askX(t.rc ? Object.assign(vv(t.base),{_rc:true}) : vv(t.base));
 }
 function askX(it){ run.queue=[it]; run.idx=0; setProg(); showItem(); }
 function showReview(t){
@@ -802,7 +803,7 @@ function record(ok){
   if(run.round===2 && run.cur){ afterExtra(run.cur, ok, it); run.cur=null; }
   if(run.round===1 && run.n===6 && !run.rushShown){ const r=rushCheck(); if(r){ run.rushShown=true; run.rushMsg=r; } }
   if(store.res[it.id]) store.res[it.id].h=((prev&&prev.h)||"").concat(ok?"〇":"✕").slice(-12);
-  if(store.res[it.id] && (run.b.type==="weak"||run.b.type==="weak-all")){ if(it._rc) store.res[it.id].rc = ok ? Date.now() : null; }
+  if(store.res[it.id] && it._rc) store.res[it.id].rc = ok ? Date.now() : null;
   if(store.res[it.id] && !ok) store.res[it.id].rc=null;
   save(); run.idx++; nextItem();
 }
@@ -940,14 +941,14 @@ function importRecord(inp){
   r.onload=()=>{ const m=$("recMsg");
     try{ const j=JSON.parse(r.result); const s=j.store||j;
       if(!s||typeof s!=="object"||!("blocks" in s||"res" in s)) throw 0;
-      const key=store.key, model=store.model;
+      const key=store.key, model=store.model, day0=store.day||"mon";
       store=Object.assign({res:{},blocks:{},explain:{},sub:{},imp:{},revs:[]}, s);
-      if(key) store.key=key; if(!store.model) store.model=model;
+      if(key) store.key=key; if(!store.model) store.model=model; if(!store.day||(!DAYS[store.day]&&store.day!=="weak")) store.day=day0;
       load2(); save();
       const n=Object.values(store.blocks||{}).filter(x=>x&&x.done).length;
       if(m) m.innerHTML=`✅ 読み込みました（終わったコマ ${n}・${esc(j.ver?"保存した版 "+j.ver:"")}）。`;
-      renderHome();
-    }catch(e){ if(m) m.innerHTML="⚠ このファイルは読み込めませんでした。「記録を書き出す」で作ったファイルを選んでください。"; }
+      try{ renderHome(); }catch(e2){ console.log(e2); }
+    }catch(e){ console.log("import err",e); if(m) m.innerHTML="⚠ このファイルは読み込めませんでした。「記録を書き出す」で作ったファイルを選んでください。"; }
     inp.value="";
   };
   r.readAsText(f);
