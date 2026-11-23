@@ -1121,4 +1121,4 @@ const BLOCKS = [
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/23 23:50", note:"記録の読み込みを強化・のこり時間に「もう一度」の問題も出す" };
+const DATAVER = { at:"11/23 23:59", note:"弱点に「正答率が低かったコマで1回目✕の問題」も追加・分析レポートに正答率の低いコマを表示" };

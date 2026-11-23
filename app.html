@@ -437,7 +437,7 @@ function startExtra(){
   const base=id=>run.items.find(x=>x.id===id)||allItems().find(x=>x.id===id);
   const fix=(run.wrongNow||[]).map(it=>({phase:"fix", base:base(it.id)||it, tries:1, review:true}));
   const slow=(run.times||[]).filter(x=>x.ok && x.sec>run.per*1.5).map(x=>({phase:"speed", base:base(x.id), tries:1})).filter(t=>t.base);
-  const rcs=recheckItems(it=>!ids.has(it.id)).map(x=>({phase:"other", base:allItems().find(y=>y.id===x.id)||x, tries:1, rc:true, _s:x._subj}));
+  const rcs=recheckItems(it=>!ids.has(it.id)).map(x=>({phase:"other", base:allItems().find(y=>y.id===x.id)||x, tries:1, rc:x._rc, _s:x._subj}));
   const other=remaining(it=>!ids.has(it.id)).map(it=>({phase:"other", base:it, tries:1, untried:!!store.res[it.id].untried, _s:it._subj}))
      .concat(rcs).sort((p,q)=>testRank(p._s)-testRank(q._s)).slice(0,40);
   run.xq=fix.concat(slow,other); run.xs={fix:fix.length, fixed:0, speed:slow.length, other:other.length, otherOk:0, n:0};
@@ -464,7 +464,7 @@ function extraNext(){
   run.cur=t;
   if(t.review) return showReview(t);
   if(t.phase==="speed" || t.untried) return askX(Object.assign({}, t.base, {_vk:undefined}));
-  return askX(t.rc ? Object.assign(vv(t.base),{_rc:true}) : vv(t.base));
+  return askX(t.rc ? Object.assign(vv(t.base),{_rc:t.rc}) : vv(t.base));
 }
 function askX(it){ run.queue=[it]; run.idx=0; setProg(); showItem(); }
 function showReview(t){
@@ -513,7 +513,7 @@ function showItem(){
   let h = "";
   if(run.rushMsg){ h += `<div class="hintbox" style="margin-bottom:8px">${run.rushMsg}</div>`; run.rushMsg=null; }
   if(run.round===2 && run.cur) h += `<div class="ref" style="margin-bottom:4px">${{fix:"① まちがえた問題の類似問題",speed:"② もう一度・速く",other:"③ ほかのコマの まだ✕"}[run.cur.phase]}${curItem()._ai?"（AIが作った類似問題）":""}</div>`;
-  if(it._rc) h += `<div class="ref" style="margin-bottom:4px">🔁 もう一度（前に2回以上まちがえた問題。できたら卒業）${(store.res[it.id]||{}).h?"　これまで "+store.res[it.id].h:""}</div>`;
+  if(it._rc) h += `<div class="ref" style="margin-bottom:4px">🔁 もう一度（${it._rc==="正答率が低かったコマ"?"正答率が低かったコマで1回目に✕だった問題":"2回以上まちがえた問題"}。できたら卒業）${(store.res[it.id]||{}).h?"　これまで "+store.res[it.id].h:""}</div>`;
   h += `<div class="card">`;
   if(it.ref) h += `<div class="ref">問題用紙 ${it.ref}</div>`;
   if(it.say){
@@ -579,9 +579,15 @@ function remaining(filter){ return allItems().filter(it=>store.res[it.id] && !st
 /* 2回以上まちがえた問題は、○になっても翌日以降の弱点のコマでもう一度（定着の確認） */
 function nX(h){ return (String(h||"").match(/✕/g)||[]).length; }
 function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
-function recheckItems(filter){ const t0=todayStart();
-  return allItems().filter(it=>{ const r=store.res[it.id]; return r && r.ok && !r.rc && nX(r.h)>=2 && (r.ts||0)<t0 && (!filter||filter(it)); })
-    .map(it=>Object.assign(vv(it),{_rc:true})); }
+/* 苦手なところ＝①2回以上まちがえた問題 ②正答率が低かったコマ（1回目70%未満）で1回目に✕だった問題。テストが終わった教科は出さない */
+function blockOf(id){ return String(id).replace(/-[^-]+$/,""); }
+function lowBlocks(){ return new Set(Object.entries(store.blocks||{}).filter(([k,v])=>v&&v.score&&parseInt(v.score)<70).map(([k])=>k)); }
+function testOver(sj){ const i=TEST.findIndex(t=>t[1].includes(sj)); if(i<0) return false; const m=TEST[i][0].match(/(\d+)\/(\d+)/); return Date.now() > new Date(2026,+m[1]-1,+m[2],15,0).getTime(); }
+function rcReason(r, low, id){ return nX(r.h)>=2 ? "2回以上まちがえた" : (r.wrong1 && low.has(blockOf(id)) ? "正答率が低かったコマ" : ""); }
+function recheckItems(filter){ const t0=todayStart(), low=lowBlocks();
+  return allItems().filter(it=>{ const r=store.res[it.id]; return r && r.ok && !r.rc && (r.ts||0)<t0 && !testOver(it._subj) && rcReason(r,low,it.id) && (!filter||filter(it)); })
+    .sort((p,q)=>testRank(p._subj)-testRank(q._subj) || nX(store.res[q.id].h)-nX(store.res[p.id].h))
+    .map(it=>Object.assign(vv(it),{_rc:rcReason(store.res[it.id],low,it.id)})); }
 function mixItems(b){
   /* その日にまちがえて、まだ直っていない問題だけ（月曜は月曜分、火曜は火曜分） */
   if(b.type==="weak") return remaining(it=>it._subj===b.subj).map(it=>store.res[it.id].untried?it:vv(it)).concat(recheckItems(it=>it._subj===b.subj));
@@ -834,7 +840,7 @@ function summaryText(){
 }
 /* ---------- 分析ファイル（この端末＋Googleドライブに保存） ---------- */
 function analysisText(){
-  const SJ=["sugaku","rika","eigo","shakai","kokugo"], now=new Date();
+  const SJ=["sugaku","rika","eigo","shakai","kokugo","gika","hotai","ongaku","bijutsu"], now=new Date();
   const items=allItems(), done=items.filter(it=>store.res[it.id]);
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—";
   let t=`2学期期末テスト対策 分析レポート\n作成：${now.toLocaleString("ja-JP")}\n\n`;
@@ -871,7 +877,16 @@ function analysisText(){
     t+=`・${r.at} ${SUBJ[x.subj]} ${x.name} ${r.pages}：まちがい${r.wrong}問（まだ✕ ${left}問）${r.note?" ※"+r.note:""}\n`;
     if(b) b.items.forEach(it=>{ if(store.res[it.id]&&!store.res[it.id].ok) t+=`　- ${stripTags(it.q).slice(0,50)} → ${it.a[0]}\n`; }); }));
   if(!ni) t+="（なし）\n";
-  t+=`\n■弱点の目安時間（✕1問=2分〔類似問題〕、時間がかかった1問=1分）\n`;
+  { const low=lowBlocks(); t+=`\n■正答率が低かったコマ（1回目70%未満）\n`; let nl=0;
+    Object.keys(DAYS).forEach(d=>blocksOf(d).forEach(b=>{ if(!low.has(b.id)) return; nl++; const s=store.blocks[b.id];
+      const w=(b.items||[]).filter(it=>store.res[it.id]&&store.res[it.id].wrong1);
+      t+=`・${DAYS[d].label} ${b.title}：${s.score}（1回目✕ ${w.length}問）\n`;
+      w.slice(0,12).forEach(it=>t+=`　- ${stripTags(it.q).slice(0,40)} → ${it.a[0]}${store.res[it.id].h?"（"+store.res[it.id].h+"）":""}\n`); }));
+    if(!nl) t+="（なし）\n";
+    const rc=recheckItems(), by={}; rc.forEach(it=>{ by[it._subj]=(by[it._subj]||0)+1; });
+    t+=`\n■もう一度出す問題（2回以上✕・正答率が低かったコマの1回目✕。テストが終わった教科は除く）：${rc.length}問\n`;
+    Object.keys(by).sort((p,q)=>testRank(p)-testRank(q)).forEach(sj=>{ t+=`${SUBJ[sj]}：${by[sj]}問\n`; const p=plan.find(x=>x[0]===SUBJ[sj]); if(p){ p[1]+=by[sj]; } else plan.push([SUBJ[sj],by[sj],0,0]); }); }
+  t+=`\n■弱点の目安時間（✕1問=2分〔類似問題〕、時間がかかった1問・もう一度1問=1分）\n`;
   plan.sort((a,b)=>b[1]-a[1]).forEach(p=>t+=`${p[0]}：${p[1]}分（✕・時間切れ${p[2]}問・スピード${p[3]}問）\n`);
   t+=`合計：${plan.reduce((a,p)=>a+p[1],0)}分\n`;
   const raw={ created:now.toISOString(), blocks:store.blocks, explain:store.explain, sub:store.sub,
