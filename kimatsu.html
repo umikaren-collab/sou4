@@ -159,19 +159,26 @@ const SUBJ = { kokugo:"国語", sugaku:"数学", eigo:"英語", shakai:"社会",
   ongaku:"音楽", bijutsu:"美術", hotai:"保体", gika:"技家", mix:"総復習" };
 
 const TEST = [
-  ["11/25（水）", ["ongaku","sugaku","gika"]],
-  ["11/26（木）", ["bijutsu","hotai","rika"]],
-  ["11/27（金）", ["eigo","kokugo","shakai"]]
+  ["11/27（期末）", ["ongaku","bijutsu","hotai","gika"]],
+  ["1/15（私立入試）", ["kokugo","eigo","shakai"]],
+  ["3/4（公立入試）", ["sugaku","rika"]]
 ];
 
 const DAYS = {
-  fri: { label:"11/20（金）", slots:[["16:50","17:00"],["17:00","17:50"],["19:30","20:20"],["20:45","21:35"],["22:00","22:50"],["23:15","24:05"]] },
-  sat: { label:"11/21（土）", slots:[["8:50","9:00"],["9:00","9:50"],["10:00","10:50"],["11:00","11:50"],["14:00","14:50"],["15:00","15:50"],["22:30","23:20"]] },
-  sun: { label:"11/22（日）", slots:[["13:50","14:00"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["19:30","20:20"],["20:30","21:20"],["21:30","22:20"],["22:30","23:30"]] },
-  mon: { label:"11/23（月・祝）", slots:[["8:50","9:00"],["9:00","9:50"],["10:00","10:50"],["11:00","11:50"],["13:00","13:50"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["19:30","20:20"],["20:30","21:20"],["21:30","22:20"],["22:30","23:30"]] },
-  tue: { label:"11/24（火）", slots:[["14:50","15:00"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["22:30","23:20"]] },
-  wed: { label:"11/25（水）", slots:[["13:50","14:00"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["22:30","23:20"]] },
-  thu: { label:"11/26（木）", slots:[["13:50","14:00"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["19:30","20:20"],["20:30","21:20"],["21:30","22:20"],["22:30","23:30"]] }
+  fri: { hidden:true, label:"11/20（金）", slots:[["16:50","17:00"],["17:00","17:50"],["19:30","20:20"],["20:45","21:35"],["22:00","22:50"],["23:15","24:05"]] },
+  sat: { hidden:true, label:"11/21（土）", slots:[["8:50","9:00"],["9:00","9:50"],["10:00","10:50"],["11:00","11:50"],["14:00","14:50"],["15:00","15:50"],["22:30","23:20"]] },
+  sun: { hidden:true, label:"11/22（日）", slots:[["13:50","14:00"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["19:30","20:20"],["20:30","21:20"],["21:30","22:20"],["22:30","23:30"]] },
+  mon: { hidden:true, label:"11/23（月・祝）", slots:[["8:50","9:00"],["9:00","9:50"],["10:00","10:50"],["11:00","11:50"],["13:00","13:50"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["19:30","20:20"],["20:30","21:20"],["21:30","22:20"],["22:30","23:30"]] },
+  tue: { hidden:true, label:"11/24（火）", slots:[["14:50","15:00"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["22:30","23:20"]] },
+  wed: { hidden:true, label:"11/25（水）", slots:[["13:50","14:00"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["22:30","23:20"]] },
+  thu: { hidden:true, label:"11/26（木）", slots:[["13:50","14:00"],["14:00","14:50"],["15:00","15:50"],["16:00","16:50"],["17:00","17:50"],["19:30","20:20"],["20:30","21:20"],["21:30","22:20"],["22:30","23:30"]] },
+  d1128: { label:"11/28（土）", slots:[["9:00","9:50"],["10:00","10:50"],["11:00","11:50"],["13:30","14:20"],["14:30","15:20"],["15:30","16:20"],["16:30","17:20"],["20:00","20:50"],["21:00","21:50"],["22:00","22:50"],["23:00","23:50"]] },
+  d1129: { label:"11/29（日）", slots:[["9:00","9:50"],["10:00","10:50"],["11:00","11:50"],["13:30","14:20"],["14:30","15:20"],["15:30","16:20"],["16:30","17:20"],["20:00","20:50"],["21:00","21:50"],["22:00","22:50"]] },
+  d1130: { label:"11/30（月）", slots:[["16:00","16:50"],["17:00","17:50"],["20:00","20:50"],["21:00","21:50"],["22:00","22:50"]] },
+  d1201: { label:"12/1（火）", slots:[["17:00","17:50"],["20:00","20:50"],["21:00","21:50"],["22:00","22:50"]] },
+  d1202: { label:"12/2（水）", slots:[["17:00","17:50"],["22:30","23:20"]] },
+  d1203: { label:"12/3（木）", slots:[["17:00","17:50"],["20:00","20:50"],["21:00","21:50"],["22:00","22:50"]] },
+  d1204: { label:"12/4（金）", slots:[["17:00","17:50"],["20:00","20:50"],["21:00","21:50"],["22:00","22:50"]] }
 };
 
 /* 提出物（範囲表より）。状態は アプリの「提出物」タブで管理 */
@@ -1261,13 +1268,63 @@ const BLOCKS = [
 { id:"w-kokugo", day:"weak", slot:null, subj:"kokugo", type:"weak", min:0, title:"国語の弱点（類似問題）" },
 { id:"w-eigo",   day:"weak", slot:null, subj:"eigo",   type:"weak", min:0, title:"英語の弱点（類似問題）" },
 { id:"w-shakai", day:"weak", slot:null, subj:"shakai", type:"weak", min:0, title:"社会の弱点（類似問題）" }
+,/* ===== 11/28〜12/4 期末テスト後（入試に向けて）===== */
+/* 11/28（土）ワーク：ページごとの時間カウンター。①＝1回目、②＝2回目 */
+{ id:"j28-0", day:"d1128", slot:0, subj:"sugaku", type:"work", min:50, title:"数学 厚物 p100〜103（①）", lead:"1ページずつ「▶スタート」→終わったら「✔終わった」。目安をこえると赤くなります。", work:[["数厚 p100 ①", 15], ["数厚 p101 ①", 15], ["数厚 p102 ①", 15], ["数厚 p103 ①", 10]] },
+{ id:"j28-1", day:"d1128", slot:1, subj:"sugaku", type:"work", min:50, title:"数学 厚物 p104〜107（①）", lead:"", work:[["数厚 p104 ①", 15], ["数厚 p105 ①", 15], ["数厚 p106 ①", 15], ["数厚 p107 ①", 10]] },
+{ id:"j28-2", day:"d1128", slot:2, subj:"sugaku", type:"work", min:50, title:"数学 厚物 p108〜111（①）", lead:"", work:[["数厚 p108 ①", 15], ["数厚 p109 ①", 15], ["数厚 p110 ①", 15], ["数厚 p111 ①", 10]] },
+{ id:"j28-3", day:"d1128", slot:3, subj:"sugaku", type:"work", min:50, title:"数学 厚物 p100〜111（②）", lead:"2回目は ① で✕だった問題を中心に、1ページ5分。", work:[["数厚 p100 ②", 5], ["数厚 p101 ②", 5], ["数厚 p102 ②", 5], ["数厚 p103 ②", 5], ["数厚 p104 ②", 5], ["数厚 p105 ②", 5], ["数厚 p106 ②", 5], ["数厚 p107 ②", 5], ["数厚 p108 ②", 5], ["数厚 p109 ②", 5], ["数厚 p110 ②", 5], ["数厚 p111 ②", 5]] },
+{ id:"j28-4", day:"d1128", slot:4, subj:"kokugo", type:"work", min:50, title:"国語 厚物 p151〜153（①②）", lead:"", work:[["国厚 p151 ①", 10], ["国厚 p151 ②", 5], ["国厚 p152 ①", 10], ["国厚 p152 ②", 5], ["国厚 p153 ①", 10], ["国厚 p153 ②", 5]] },
+{ id:"j28-5", day:"d1128", slot:5, subj:"mix", type:"work", min:50, title:"塾の宿題（①②）", lead:"", work:[["塾宿 p108 ①", 15], ["塾宿 p107 ①", 15], ["塾宿 p108 ②", 5], ["塾宿 p109 ②", 5]] },
+{ id:"j28-6", day:"d1128", slot:6, subj:"eigo", type:"work", min:50, title:"英語 厚物 p132〜136（①）", lead:"", work:[["英厚 p132 ①", 10], ["英厚 p133 ①", 10], ["英厚 p134 ①", 10], ["英厚 p135 ①", 10], ["英厚 p136 ①", 10]] },
+{ id:"j28-7", day:"d1128", slot:7, subj:"eigo", type:"work", min:50, title:"英語 厚物 p137〜141（①）", lead:"", work:[["英厚 p137 ①", 10], ["英厚 p138 ①", 10], ["英厚 p139 ①", 10], ["英厚 p140 ①", 10], ["英厚 p141 ①", 10]] },
+{ id:"j28-8", day:"d1128", slot:8, subj:"eigo", type:"work", min:50, title:"英語 厚物 p142・143（①）＋p132〜137（②）", lead:"", work:[["英厚 p142 ①", 10], ["英厚 p143 ①", 10], ["英厚 p132 ②", 5], ["英厚 p133 ②", 5], ["英厚 p134 ②", 5], ["英厚 p135 ②", 5], ["英厚 p136 ②", 5], ["英厚 p137 ②", 5]] },
+{ id:"j28-9", day:"d1128", slot:9, subj:"eigo", type:"work", min:50, title:"英語 厚物 p138〜143（②）＋塾の宿題 p110", lead:"", work:[["英厚 p138 ②", 5], ["英厚 p139 ②", 5], ["英厚 p140 ②", 5], ["英厚 p141 ②", 5], ["英厚 p142 ②", 5], ["英厚 p143 ②", 5], ["塾宿 p110 ①", 10], ["塾宿 p110 ②", 5]] },
+{ id:"d-d1128", day:"d1128", slot:10, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
+/* 11/29（日）期末の正答率が低かったコマを2回目＋まだ✕ */
+{ id:"j29-0", day:"d1129", slot:0, type:"drill", min:50, ref:"f1", title:"数学 2乗に比例する関数（2回目）", lead:"期末で68%。y=ax² の式・変化の割合・△の面積。式を書いてから答える。" },
+{ id:"j29-1", day:"d1129", slot:1, type:"drill", min:50, ref:"f5", title:"英語 間接疑問・申し出・Let's Read（2回目）", lead:"期末で64%。私立入試（英語）に向けて。単語はつづりまで。" },
+{ id:"j29-2", day:"d1129", slot:2, type:"drill", min:50, ref:"h3", title:"国語 文法・温かいスープ・和歌（2回目）", lead:"期末で52%。いちばん低かったコマ。" },
+{ id:"j29-3", day:"d1129", slot:3, type:"drill", min:50, ref:"h4", title:"社会 公民 総まとめ（2回目）", lead:"私立入試の社会。公民の総まとめをもう一度。" },
+{ id:"j29-4", day:"d1129", slot:4, type:"drill", min:50, ref:"f2", title:"数学 相似・平行線と線分の比（2回目）", lead:"期末で64%。体積比・影の問題は図をかく。" },
+{ id:"j29-5", day:"d1129", slot:5, type:"drill", min:50, ref:"f3", title:"理科 宇宙（太陽と太陽系）（2回目）", lead:"期末で60%。" },
+{ id:"j29-6", day:"d1129", slot:6, subj:"kokugo", type:"weak", min:50, title:"国語 弱点（まだ✕）", lead:"期末のまだ✕。類似問題で直す。終わったら残り時間は練習。" },
+{ id:"j29-7", day:"d1129", slot:7, subj:"eigo", type:"weak", min:50, title:"英語 弱点（まだ✕）", lead:"期末のまだ✕（単語・英訳・間接疑問）。類似問題で直す。" },
+{ id:"j29-8", day:"d1129", slot:8, type:"drill", min:50, ref:"h2", title:"英語 総まとめ（2回目）", lead:"期末で60%。" },
+{ id:"d-d1129", day:"d1129", slot:9, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
+/* 11/30（月） */
+{ id:"j30-0", day:"d1130", slot:0, type:"drill", min:50, ref:"s1", title:"数学 相似の証明と利用（2回目）", lead:"期末で60%。証明は根拠（合同・相似条件）を書く。" },
+{ id:"j30-1", day:"d1130", slot:1, type:"drill", min:50, ref:"h1", title:"社会 公民 国会・選挙・地方自治（2回目）", lead:"私立入試の社会。" },
+{ id:"j30-2", day:"d1130", slot:2, type:"drill", min:50, ref:"u3", title:"国語 慣用句・ことわざ・故事成語／文の組み立て（2回目）", lead:"期末で64%。" },
+{ id:"j30-3", day:"d1130", slot:3, type:"drill", min:50, ref:"s2", title:"理科 太陽と恒星の動き・季節（2回目）", lead:"期末で64%。" },
+{ id:"d-d1130", day:"d1130", slot:4, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
+/* 12/1（火）〜 5教科のテストのやり直し */
+{ id:"k01-0", day:"d1201", slot:0, subj:"sugaku", type:"work", min:50, title:"📝 数学テストのやり直し", lead:"返ってきたテストを使います。終わったら✕の問題を📸取り込みしておくと、次から類似問題で出せます。", work:[["✕の問題に印。どこで間ちがえたか書く", 5], ["答えを見ないで解き直す（ノートに式・理由まで）", 25], ["解けなかった問題は解説を読んで、ノートにまとめる", 15], ["もう一度、何も見ないで解く", 5]] },
+{ id:"k01-1", day:"d1201", slot:1, subj:"eigo", type:"work", min:50, title:"📝 英語テストのやり直し", lead:"返ってきたテストを使います。終わったら✕の問題を📸取り込みしておくと、次から類似問題で出せます。", work:[["✕の問題に印。どこで間ちがえたか書く", 5], ["答えを見ないで解き直す（ノートに式・理由まで）", 25], ["解けなかった問題は解説を読んで、ノートにまとめる", 15], ["もう一度、何も見ないで解く", 5]] },
+{ id:"k01-2", day:"d1201", slot:2, subj:"kokugo", type:"work", min:50, title:"📝 国語テストのやり直し", lead:"返ってきたテストを使います。終わったら✕の問題を📸取り込みしておくと、次から類似問題で出せます。", work:[["✕の問題に印。どこで間ちがえたか書く", 5], ["答えを見ないで解き直す（ノートに式・理由まで）", 25], ["解けなかった問題は解説を読んで、ノートにまとめる", 15], ["もう一度、何も見ないで解く", 5]] },
+{ id:"d-d1201", day:"d1201", slot:3, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
+/* 12/2（水）塾 */
+{ id:"k02-0", day:"d1202", slot:0, subj:"rika", type:"work", min:50, title:"📝 理科テストのやり直し", lead:"返ってきたテストを使います。終わったら✕の問題を📸取り込みしておくと、次から類似問題で出せます。", work:[["✕の問題に印。どこで間ちがえたか書く", 5], ["答えを見ないで解き直す（ノートに式・理由まで）", 25], ["解けなかった問題は解説を読んで、ノートにまとめる", 15], ["もう一度、何も見ないで解く", 5]] },
+{ id:"d-d1202", day:"d1202", slot:1, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
+/* 12/3（木） */
+{ id:"k03-0", day:"d1203", slot:0, subj:"shakai", type:"work", min:50, title:"📝 社会テストのやり直し", lead:"返ってきたテストを使います。終わったら✕の問題を📸取り込みしておくと、次から類似問題で出せます。", work:[["✕の問題に印。どこで間ちがえたか書く", 5], ["答えを見ないで解き直す（ノートに式・理由まで）", 25], ["解けなかった問題は解説を読んで、ノートにまとめる", 15], ["もう一度、何も見ないで解く", 5]] },
+{ id:"k03-1", day:"d1203", slot:1, type:"drill", min:50, ref:"t1", title:"数学 ベーシック＋確認問題（2回目）", lead:"方程式・グラフ・面積をもう一度。" },
+{ id:"k03-2", day:"d1203", slot:2, type:"drill", min:50, ref:"u1", title:"英語 後置修飾・関係代名詞・間接疑問文（2回目）", lead:"私立入試の英語。" },
+{ id:"d-d1203", day:"d1203", slot:3, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
+/* 12/4（金） */
+{ id:"k04-0", day:"d1204", slot:0, type:"drill", min:50, ref:"w4", title:"理科 天体（2回目）", lead:"ノートの空欄だったところ。" },
+{ id:"k04-1", day:"d1204", slot:1, type:"drill", min:50, ref:"f4", title:"国語 和歌と温かいスープ（2回目）", lead:"期末で66%。" },
+{ id:"k04-2", day:"d1204", slot:2, type:"drill", min:50, ref:"m7", title:"社会 公民 自由権・人権の広がり（2回目）", lead:"私立入試の社会。" },
+{ id:"d-d1204", day:"d1204", slot:3, subj:"mix", type:"task", min:50, title:"✏️ いつものドリル（5教科10問）", subs:[], lead:"いつもの10問ドリル（5教科）を開いてやります。終わったら「終わる」。" },
 ];
 
 /* 提出物の答え合わせ画像から作る復習問題（画像がドライブに届いたら追加） */
 const SUBREV = [];
 // 答え合わせ写真の取り込み記録（取り込むたびに追記）: {at, file, subj, title, wrong, block}
 const IMPORTS = [];
-const DATAVER = { at:"11/23 23:59", note:"弱点に「正答率が低かったコマで1回目✕の問題」も追加・分析レポートに正答率の低いコマを表示" };
+/* 「2回目」のコマは、元のコマの問題をそのまま使う（記録は同じ問題に積み上がる） */
+BLOCKS.forEach(b=>{ if(b.ref){ const s=BLOCKS.find(x=>x.id===b.ref); b.items=s.items; b.subj=b.subj||s.subj; if(!b.points&&s.points) b.points=s.points; } });
+const DATAVER = { at:"11/27 23:59", note:"期末テスト後（11/28〜12/4）の予定。土曜はワークの時間カウンター、日曜から2回目・まだ✕、火曜から5教科のテストのやり直し" };
 
 </script>
 <script>
@@ -1301,8 +1358,11 @@ function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
 function fmtClock(min){ const h=Math.floor(min/60), m=min%60; return `${h}:${String(m).padStart(2,"0")}`; }
 function dayTotal(d){ return DAYS[d].slots.reduce((a,s)=>a+toMin(s[1])-toMin(s[0]),0); }
 
+function todayKey(){ const n=new Date(), k="d"+(n.getMonth()+1)+String(n.getDate()).padStart(2,"0"); const vis=Object.keys(DAYS).filter(d=>!DAYS[d].hidden); return vis.includes(k)?k:vis[0]; }
 function renderHome(){
-  $("tabs").innerHTML = Object.keys(DAYS).map(d=>{
+  { const td=new Date().toDateString(), ok = store.day==="weak"||store.day==="sub"||(DAYS[store.day]&&!DAYS[store.day].hidden);
+    if(!ok || store.dayAuto!==td){ store.day=todayKey(); store.dayAuto=td; } }
+  $("tabs").innerHTML = Object.keys(DAYS).filter(d=>!DAYS[d].hidden).map(d=>{
     const bs=blocksOf(d).filter(b=>b.slot!=null), done=bs.filter(b=>store.blocks[b.id]?.done).length;
     return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('${d}')">${DAYS[d].label}<small>${bs.length}コマ・${done} 終了</small></button>`;
   }).join("") + `<button class="tab ${store.day==="weak"?"on":""}" onclick="pickDay('weak')">弱点<small>まだ✕ ${remaining().length}問${recheckItems().length?`・もう一度 ${recheckItems().length}`:""}</small></button>`
@@ -1352,9 +1412,9 @@ function renderHome(){
 function impCount(){ return Object.values(store.imp||{}).reduce((s,x)=>s+x.length,0); }
 function renderCount(){ try{ $("verLine").textContent="アプリ："+DATAVER.at+" 版　答え合わせの取り込み "+impCount()+"件"; }catch(e){}
   const t0=new Date(); t0.setHours(0,0,0,0);
-  const days=[["11/25（水）",new Date(2026,10,25)],["11/26（木）",new Date(2026,10,26)],["11/27（金）",new Date(2026,10,27)]];
   let h=`<div class="count">`;
-  TEST.forEach(([lab,subs],i)=>{ const n=Math.round((days[i][1]-t0)/864e5);
+  TEST.forEach(([lab,subs])=>{ const m=lab.match(/(\d+)\/(\d+)/), y=+m[1]>=11?2026:2027, n=Math.round((new Date(y,+m[1]-1,+m[2])-t0)/864e5);
+    if(n<0) return;
     h+=`<div>${lab} <b>あと${n}日</b>　${subs.map(x=>SUBJ[x]).join("・")}</div>`; });
   $("countBox").innerHTML=h+`</div>`;
 }
@@ -1425,12 +1485,14 @@ function startBlock(id){
   $("home").classList.add("hidden"); $("run").classList.remove("hidden");
   document.documentElement.style.setProperty("--c", color(b.subj));
   $("rTag").textContent = SUBJ[b.subj]; $("rTag").style.background = color(b.subj);
+  if(b.type==="work") run.w={ i:0, t:null, acc:0, paused:false, log:[] };
   clearInterval(clockTimer); clockTimer=setInterval(tick,1000); tick();
   showIntro();
 }
 function tick(){
   if(!run) return;
   const sec=Math.floor((Date.now()-run.t0)/1000), lim=run.b.min*60;
+  if(run.b.type==="work"){ workTick(sec, lim); return; }
   if(run.b.type==="break"||run.b.type==="task"){
     const left=Math.max(0,lim-sec);
     $("rClock").textContent = `のこり ${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;
@@ -1469,6 +1531,7 @@ function showIntro(){
     tick(); return;
   }
   if(b.type==="task") return showTask(b);
+  if(b.type==="work") return showWork(b);
   let h = `<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:8px">${b.title}</div>`;
   if(b.lead) h += `<div class="lead">${b.lead}</div>`;
   if(b.points) h += `<ul class="points">${b.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
@@ -1521,6 +1584,56 @@ function showTask(b){
   if(subs.length) h+=`<div class="tools"><button class="btn" onclick="taskDone(1)">途中まで</button><div class="sp"></div><button class="btn ok" onclick="taskDone(2)">終わった（完了）</button><button class="btn primary" onclick="taskDone(3)">答え合わせまで済んだ</button></div>`;
   else h+=`<div class="tools"><div class="sp"></div><button class="btn primary" onclick="taskDone(0)">終わる</button></div>`;
   $("stage").innerHTML=h; tick(); try{ speakGuide(); }catch(e){}
+}
+
+/* ---------- ワーク（紙の問題集）用の時間カウンター ----------
+   b.work = [["数厚 p100 ①",15], ...]  ページごとに目安の分。押した時刻で実際の時間を記録 */
+const fmt=s=>{ s=Math.max(0,Math.floor(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; };
+function wItemSec(){ const w=run.w; return w.acc + (w.t&&!w.paused ? (Date.now()-w.t)/1000 : 0); }
+function showWork(b){
+  hidePad(); const w=run.w, L=b.work;
+  const rows=L.map((x,i)=>{ const lg=w.log[i];
+    const st = lg ? `<b style="color:${lg.sec>x[1]*60?"var(--ng)":"var(--ok)"}">${fmt(lg.sec)}</b>（目安${x[1]}分）`
+             : i===w.i ? `<b id="wNow">${w.t?"":"まだ"}</b>（目安${x[1]}分）` : `目安${x[1]}分`;
+    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;margin-bottom:4px;${i===w.i&&!lg?"background:#eef6f6;border:2px solid var(--accent)":lg?"opacity:.75":""}"><span style="font-weight:700">${lg?"✔ ":i===w.i?"▶ ":""}${esc(x[0])}</span><span>${st}</span></div>`; }).join("");
+  const plan=L.reduce((s,x)=>s+x[1],0);
+  let h=`<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:4px">${b.title}</div>
+    ${b.lead?`<div class="lead" style="margin-bottom:6px">${b.lead}</div>`:""}
+    <div style="font-size:13px;color:var(--sub);margin-bottom:8px">目安 合計${plan}分／このコマ${b.min}分　のこり <b id="wSlot"></b></div>${rows}`;
+  if(w.i<L.length){
+    h+=`<div style="text-align:center;margin-top:10px"><div style="font-size:14px;color:var(--sub)">${esc(L[w.i][0])}　目安${L[w.i][1]}分</div>
+      <div class="big" id="wBig" style="font-size:54px;font-weight:800">${w.t?"":fmt(L[w.i][1]*60)}</div>
+      <div id="wSub" style="font-size:14px;font-weight:700"></div></div></div>`;
+    h+= !w.t ? `<div class="tools"><button class="btn" onclick="workEnd()">終わる</button><div class="sp"></div><button class="btn primary" onclick="workStart()">▶ スタート</button></div>`
+             : `<div class="tools"><button class="btn" onclick="workPause()">${w.paused?"▶ 再開":"⏸ ちょっと休む"}</button><button class="btn" onclick="workEnd()">終わる</button><div class="sp"></div><button class="btn ok" onclick="workNext()">✔ 終わった → ${w.i+1<L.length?"次へ":"おしまい"}</button></div>`;
+  } else {
+    const real=w.log.reduce((s,x)=>s+x.sec,0);
+    h+=`<div class="lead" style="margin-top:10px">全部終わりました。目安${plan}分 → 実際 <b>${fmt(real)}</b></div></div>
+      <div class="tools"><div class="sp"></div><button class="btn primary" onclick="workEnd()">記録して終わる</button></div>`;
+  }
+  $("stage").innerHTML=h; tick();
+}
+function workStart(){ const w=run.w; w.t=Date.now(); w.acc=0; w.paused=false; showWork(run.b); }
+function workPause(){ const w=run.w; if(w.paused){ w.t=Date.now(); w.paused=false; } else { w.acc+= (Date.now()-w.t)/1000; w.paused=true; } showWork(run.b); }
+function workNext(){ const w=run.w, x=run.b.work[w.i];
+  w.log[w.i]={ label:x[0], plan:x[1], sec:Math.round(wItemSec()) }; w.i++; w.acc=0; w.paused=false; w.t = w.i<run.b.work.length ? Date.now() : null;
+  showWork(run.b); }
+function workEnd(){
+  const w=run.w; if(w.t && w.i<run.b.work.length && wItemSec()>5){ const x=run.b.work[w.i]; w.log[w.i]={label:x[0],plan:x[1],sec:Math.round(wItemSec()),part:true}; }
+  store.work=store.work||{}; store.work[run.b.id]=w.log.filter(Boolean); save();
+  const done=w.log.filter(x=>x&&!x.part).length, all=run.b.work.length;
+  run.xsum = `ワーク ${done}/${all} 終了。`+w.log.filter(Boolean).map(x=>`${x.label} ${fmt(x.sec)}（目安${x.plan}分）${x.sec>x.plan*60?"⚠":""}`).join("／");
+  finishBlock(null);
+}
+function workTick(sec, lim){
+  $("rClock").textContent = `のこり ${fmt(lim-sec)}`; $("rClock").classList.toggle("over", sec>lim);
+  const s=$("wSlot"); if(s) s.textContent = sec>lim ? `${fmt(sec-lim)} オーバー` : fmt(lim-sec);
+  const w=run.w, x=run.b.work[w.i]; if(!x||!w.t) return;
+  const e=wItemSec(), left=x[1]*60-e, big=$("wBig"), sub=$("wSub"), now=$("wNow");
+  if(big){ big.textContent = left>=0 ? fmt(left) : "+"+fmt(-left); big.style.color = left<0?"var(--ng)":left<60?"var(--warn)":""; }
+  if(sub) sub.textContent = w.paused ? "⏸ 休けい中" : left>=0 ? `のこり（${fmt(e)} 経過）` : `目安より ${fmt(-left)} オーバー`;
+  if(now) now.textContent = fmt(e);
+  if(left<=0 && !w["rang"+w.i]){ w["rang"+w.i]=true; beep(); }
 }
 function taskDone(k){ (run.b.subs||[]).forEach(id=>{ if(k>(store.sub[id]||0)) store.sub[id]=k; }); save(); finishBlock(null); }
 function curItem(){ return run.round===1 ? run.items[run.idx] : run.queue[run.idx]; }
@@ -1708,7 +1821,7 @@ function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime
 /* 苦手なところ＝①2回以上まちがえた問題 ②正答率が低かったコマ（1回目70%未満）で1回目に✕だった問題。テストが終わった教科は出さない */
 function blockOf(id){ return String(id).replace(/-[^-]+$/,""); }
 function lowBlocks(){ return new Set(Object.entries(store.blocks||{}).filter(([k,v])=>v&&v.score&&parseInt(v.score)<70).map(([k])=>k)); }
-function testOver(sj){ const i=TEST.findIndex(t=>t[1].includes(sj)); if(i<0) return false; const m=TEST[i][0].match(/(\d+)\/(\d+)/); return Date.now() > new Date(2026,+m[1]-1,+m[2],15,0).getTime(); }
+function testOver(sj){ const i=TEST.findIndex(t=>t[1].includes(sj)); if(i<0) return false; const m=TEST[i][0].match(/(\d+)\/(\d+)/); const y=+m[1]>=11?2026:2027; return Date.now() > new Date(y,+m[1]-1,+m[2],15,0).getTime(); }
 function rcReason(r, low, id){ return nX(r.h)>=2 ? "2回以上まちがえた" : (r.wrong1 && low.has(blockOf(id)) ? "正答率が低かったコマ" : ""); }
 function recheckItems(filter){ const t0=todayStart(), low=lowBlocks();
   return allItems().filter(it=>{ const r=store.res[it.id]; return r && r.ok && !r.rc && (r.ts||0)<t0 && !testOver(it._subj) && rcReason(r,low,it.id) && (!filter||filter(it)); })
@@ -1971,10 +2084,11 @@ function analysisText(){
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—";
   let t=`2学期期末テスト対策 分析レポート\n作成：${now.toLocaleString("ja-JP")}\n\n`;
   t+=`■ブロックの結果\n`;
-  Object.keys(DAYS).forEach(d=>{ t+=`[${DAYS[d].label}]\n`;
+  Object.keys(DAYS).filter(d=>!DAYS[d].hidden).forEach(d=>{ t+=`[${DAYS[d].label}]\n`;
     blocksOf(d).forEach(b=>{ const s=store.blocks[b.id];
       const hs=(s?.hist||[]).map(h=>h.score).filter(Boolean);
-      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）${hs.length?`／これまで ${hs.join("→")}→${s.score||"済"}（${hs.length+1}回目）`:""}`:"未実施"}\n`; }); });
+      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）${hs.length?`／これまで ${hs.join("→")}→${s.score||"済"}（${hs.length+1}回目）`:""}`:"未実施"}\n`;
+      const wl=(store.work||{})[b.id]; if(wl&&wl.length) wl.forEach(x=>{ t+=`　- ${x.label}：${Math.floor(x.sec/60)}分${String(x.sec%60).padStart(2,"0")}秒（目安${x.plan}分）${x.sec>x.plan*60?" ⚠オーバー":""}${x.part?"（途中）":""}\n`; }); }); });
   t+=`\n■教科別（1回目の正答率・1問の平均時間）\n`;
   const plan=[];
   SJ.forEach(sj=>{
@@ -2004,7 +2118,7 @@ function analysisText(){
     if(b) b.items.forEach(it=>{ if(store.res[it.id]&&!store.res[it.id].ok) t+=`　- ${stripTags(it.q).slice(0,50)} → ${it.a[0]}\n`; }); }));
   if(!ni) t+="（なし）\n";
   { const low=lowBlocks(); t+=`\n■正答率が低かったコマ（1回目70%未満）\n`; let nl=0;
-    Object.keys(DAYS).forEach(d=>blocksOf(d).forEach(b=>{ if(!low.has(b.id)) return; nl++; const s=store.blocks[b.id];
+    Object.keys(DAYS).filter(d=>!DAYS[d].hidden).forEach(d=>blocksOf(d).forEach(b=>{ if(!low.has(b.id)) return; nl++; const s=store.blocks[b.id];
       const w=(b.items||[]).filter(it=>store.res[it.id]&&store.res[it.id].wrong1);
       t+=`・${DAYS[d].label} ${b.title}：${s.score}（1回目✕ ${w.length}問）\n`;
       w.slice(0,12).forEach(it=>t+=`　- ${stripTags(it.q).slice(0,40)} → ${it.a[0]}${store.res[it.id].h?"（"+store.res[it.id].h+"）":""}\n`); }));

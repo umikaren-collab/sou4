@@ -175,8 +175,11 @@ function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
 function fmtClock(min){ const h=Math.floor(min/60), m=min%60; return `${h}:${String(m).padStart(2,"0")}`; }
 function dayTotal(d){ return DAYS[d].slots.reduce((a,s)=>a+toMin(s[1])-toMin(s[0]),0); }
 
+function todayKey(){ const n=new Date(), k="d"+(n.getMonth()+1)+String(n.getDate()).padStart(2,"0"); const vis=Object.keys(DAYS).filter(d=>!DAYS[d].hidden); return vis.includes(k)?k:vis[0]; }
 function renderHome(){
-  $("tabs").innerHTML = Object.keys(DAYS).map(d=>{
+  { const td=new Date().toDateString(), ok = store.day==="weak"||store.day==="sub"||(DAYS[store.day]&&!DAYS[store.day].hidden);
+    if(!ok || store.dayAuto!==td){ store.day=todayKey(); store.dayAuto=td; } }
+  $("tabs").innerHTML = Object.keys(DAYS).filter(d=>!DAYS[d].hidden).map(d=>{
     const bs=blocksOf(d).filter(b=>b.slot!=null), done=bs.filter(b=>store.blocks[b.id]?.done).length;
     return `<button class="tab ${store.day===d?"on":""}" onclick="pickDay('${d}')">${DAYS[d].label}<small>${bs.length}コマ・${done} 終了</small></button>`;
   }).join("") + `<button class="tab ${store.day==="weak"?"on":""}" onclick="pickDay('weak')">弱点<small>まだ✕ ${remaining().length}問${recheckItems().length?`・もう一度 ${recheckItems().length}`:""}</small></button>`
@@ -226,9 +229,9 @@ function renderHome(){
 function impCount(){ return Object.values(store.imp||{}).reduce((s,x)=>s+x.length,0); }
 function renderCount(){ try{ $("verLine").textContent="アプリ："+DATAVER.at+" 版　答え合わせの取り込み "+impCount()+"件"; }catch(e){}
   const t0=new Date(); t0.setHours(0,0,0,0);
-  const days=[["11/25（水）",new Date(2026,10,25)],["11/26（木）",new Date(2026,10,26)],["11/27（金）",new Date(2026,10,27)]];
   let h=`<div class="count">`;
-  TEST.forEach(([lab,subs],i)=>{ const n=Math.round((days[i][1]-t0)/864e5);
+  TEST.forEach(([lab,subs])=>{ const m=lab.match(/(\d+)\/(\d+)/), y=+m[1]>=11?2026:2027, n=Math.round((new Date(y,+m[1]-1,+m[2])-t0)/864e5);
+    if(n<0) return;
     h+=`<div>${lab} <b>あと${n}日</b>　${subs.map(x=>SUBJ[x]).join("・")}</div>`; });
   $("countBox").innerHTML=h+`</div>`;
 }
@@ -299,12 +302,14 @@ function startBlock(id){
   $("home").classList.add("hidden"); $("run").classList.remove("hidden");
   document.documentElement.style.setProperty("--c", color(b.subj));
   $("rTag").textContent = SUBJ[b.subj]; $("rTag").style.background = color(b.subj);
+  if(b.type==="work") run.w={ i:0, t:null, acc:0, paused:false, log:[] };
   clearInterval(clockTimer); clockTimer=setInterval(tick,1000); tick();
   showIntro();
 }
 function tick(){
   if(!run) return;
   const sec=Math.floor((Date.now()-run.t0)/1000), lim=run.b.min*60;
+  if(run.b.type==="work"){ workTick(sec, lim); return; }
   if(run.b.type==="break"||run.b.type==="task"){
     const left=Math.max(0,lim-sec);
     $("rClock").textContent = `のこり ${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`;
@@ -343,6 +348,7 @@ function showIntro(){
     tick(); return;
   }
   if(b.type==="task") return showTask(b);
+  if(b.type==="work") return showWork(b);
   let h = `<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:8px">${b.title}</div>`;
   if(b.lead) h += `<div class="lead">${b.lead}</div>`;
   if(b.points) h += `<ul class="points">${b.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
@@ -395,6 +401,56 @@ function showTask(b){
   if(subs.length) h+=`<div class="tools"><button class="btn" onclick="taskDone(1)">途中まで</button><div class="sp"></div><button class="btn ok" onclick="taskDone(2)">終わった（完了）</button><button class="btn primary" onclick="taskDone(3)">答え合わせまで済んだ</button></div>`;
   else h+=`<div class="tools"><div class="sp"></div><button class="btn primary" onclick="taskDone(0)">終わる</button></div>`;
   $("stage").innerHTML=h; tick(); try{ speakGuide(); }catch(e){}
+}
+
+/* ---------- ワーク（紙の問題集）用の時間カウンター ----------
+   b.work = [["数厚 p100 ①",15], ...]  ページごとに目安の分。押した時刻で実際の時間を記録 */
+const fmt=s=>{ s=Math.max(0,Math.floor(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; };
+function wItemSec(){ const w=run.w; return w.acc + (w.t&&!w.paused ? (Date.now()-w.t)/1000 : 0); }
+function showWork(b){
+  hidePad(); const w=run.w, L=b.work;
+  const rows=L.map((x,i)=>{ const lg=w.log[i];
+    const st = lg ? `<b style="color:${lg.sec>x[1]*60?"var(--ng)":"var(--ok)"}">${fmt(lg.sec)}</b>（目安${x[1]}分）`
+             : i===w.i ? `<b id="wNow">${w.t?"":"まだ"}</b>（目安${x[1]}分）` : `目安${x[1]}分`;
+    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;margin-bottom:4px;${i===w.i&&!lg?"background:#eef6f6;border:2px solid var(--accent)":lg?"opacity:.75":""}"><span style="font-weight:700">${lg?"✔ ":i===w.i?"▶ ":""}${esc(x[0])}</span><span>${st}</span></div>`; }).join("");
+  const plan=L.reduce((s,x)=>s+x[1],0);
+  let h=`<div class="card"><div style="font-size:19px;font-weight:800;margin-bottom:4px">${b.title}</div>
+    ${b.lead?`<div class="lead" style="margin-bottom:6px">${b.lead}</div>`:""}
+    <div style="font-size:13px;color:var(--sub);margin-bottom:8px">目安 合計${plan}分／このコマ${b.min}分　のこり <b id="wSlot"></b></div>${rows}`;
+  if(w.i<L.length){
+    h+=`<div style="text-align:center;margin-top:10px"><div style="font-size:14px;color:var(--sub)">${esc(L[w.i][0])}　目安${L[w.i][1]}分</div>
+      <div class="big" id="wBig" style="font-size:54px;font-weight:800">${w.t?"":fmt(L[w.i][1]*60)}</div>
+      <div id="wSub" style="font-size:14px;font-weight:700"></div></div></div>`;
+    h+= !w.t ? `<div class="tools"><button class="btn" onclick="workEnd()">終わる</button><div class="sp"></div><button class="btn primary" onclick="workStart()">▶ スタート</button></div>`
+             : `<div class="tools"><button class="btn" onclick="workPause()">${w.paused?"▶ 再開":"⏸ ちょっと休む"}</button><button class="btn" onclick="workEnd()">終わる</button><div class="sp"></div><button class="btn ok" onclick="workNext()">✔ 終わった → ${w.i+1<L.length?"次へ":"おしまい"}</button></div>`;
+  } else {
+    const real=w.log.reduce((s,x)=>s+x.sec,0);
+    h+=`<div class="lead" style="margin-top:10px">全部終わりました。目安${plan}分 → 実際 <b>${fmt(real)}</b></div></div>
+      <div class="tools"><div class="sp"></div><button class="btn primary" onclick="workEnd()">記録して終わる</button></div>`;
+  }
+  $("stage").innerHTML=h; tick();
+}
+function workStart(){ const w=run.w; w.t=Date.now(); w.acc=0; w.paused=false; showWork(run.b); }
+function workPause(){ const w=run.w; if(w.paused){ w.t=Date.now(); w.paused=false; } else { w.acc+= (Date.now()-w.t)/1000; w.paused=true; } showWork(run.b); }
+function workNext(){ const w=run.w, x=run.b.work[w.i];
+  w.log[w.i]={ label:x[0], plan:x[1], sec:Math.round(wItemSec()) }; w.i++; w.acc=0; w.paused=false; w.t = w.i<run.b.work.length ? Date.now() : null;
+  showWork(run.b); }
+function workEnd(){
+  const w=run.w; if(w.t && w.i<run.b.work.length && wItemSec()>5){ const x=run.b.work[w.i]; w.log[w.i]={label:x[0],plan:x[1],sec:Math.round(wItemSec()),part:true}; }
+  store.work=store.work||{}; store.work[run.b.id]=w.log.filter(Boolean); save();
+  const done=w.log.filter(x=>x&&!x.part).length, all=run.b.work.length;
+  run.xsum = `ワーク ${done}/${all} 終了。`+w.log.filter(Boolean).map(x=>`${x.label} ${fmt(x.sec)}（目安${x.plan}分）${x.sec>x.plan*60?"⚠":""}`).join("／");
+  finishBlock(null);
+}
+function workTick(sec, lim){
+  $("rClock").textContent = `のこり ${fmt(lim-sec)}`; $("rClock").classList.toggle("over", sec>lim);
+  const s=$("wSlot"); if(s) s.textContent = sec>lim ? `${fmt(sec-lim)} オーバー` : fmt(lim-sec);
+  const w=run.w, x=run.b.work[w.i]; if(!x||!w.t) return;
+  const e=wItemSec(), left=x[1]*60-e, big=$("wBig"), sub=$("wSub"), now=$("wNow");
+  if(big){ big.textContent = left>=0 ? fmt(left) : "+"+fmt(-left); big.style.color = left<0?"var(--ng)":left<60?"var(--warn)":""; }
+  if(sub) sub.textContent = w.paused ? "⏸ 休けい中" : left>=0 ? `のこり（${fmt(e)} 経過）` : `目安より ${fmt(-left)} オーバー`;
+  if(now) now.textContent = fmt(e);
+  if(left<=0 && !w["rang"+w.i]){ w["rang"+w.i]=true; beep(); }
 }
 function taskDone(k){ (run.b.subs||[]).forEach(id=>{ if(k>(store.sub[id]||0)) store.sub[id]=k; }); save(); finishBlock(null); }
 function curItem(){ return run.round===1 ? run.items[run.idx] : run.queue[run.idx]; }
@@ -582,7 +638,7 @@ function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime
 /* 苦手なところ＝①2回以上まちがえた問題 ②正答率が低かったコマ（1回目70%未満）で1回目に✕だった問題。テストが終わった教科は出さない */
 function blockOf(id){ return String(id).replace(/-[^-]+$/,""); }
 function lowBlocks(){ return new Set(Object.entries(store.blocks||{}).filter(([k,v])=>v&&v.score&&parseInt(v.score)<70).map(([k])=>k)); }
-function testOver(sj){ const i=TEST.findIndex(t=>t[1].includes(sj)); if(i<0) return false; const m=TEST[i][0].match(/(\d+)\/(\d+)/); return Date.now() > new Date(2026,+m[1]-1,+m[2],15,0).getTime(); }
+function testOver(sj){ const i=TEST.findIndex(t=>t[1].includes(sj)); if(i<0) return false; const m=TEST[i][0].match(/(\d+)\/(\d+)/); const y=+m[1]>=11?2026:2027; return Date.now() > new Date(y,+m[1]-1,+m[2],15,0).getTime(); }
 function rcReason(r, low, id){ return nX(r.h)>=2 ? "2回以上まちがえた" : (r.wrong1 && low.has(blockOf(id)) ? "正答率が低かったコマ" : ""); }
 function recheckItems(filter){ const t0=todayStart(), low=lowBlocks();
   return allItems().filter(it=>{ const r=store.res[it.id]; return r && r.ok && !r.rc && (r.ts||0)<t0 && !testOver(it._subj) && rcReason(r,low,it.id) && (!filter||filter(it)); })
@@ -845,10 +901,11 @@ function analysisText(){
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—";
   let t=`2学期期末テスト対策 分析レポート\n作成：${now.toLocaleString("ja-JP")}\n\n`;
   t+=`■ブロックの結果\n`;
-  Object.keys(DAYS).forEach(d=>{ t+=`[${DAYS[d].label}]\n`;
+  Object.keys(DAYS).filter(d=>!DAYS[d].hidden).forEach(d=>{ t+=`[${DAYS[d].label}]\n`;
     blocksOf(d).forEach(b=>{ const s=store.blocks[b.id];
       const hs=(s?.hist||[]).map(h=>h.score).filter(Boolean);
-      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）${hs.length?`／これまで ${hs.join("→")}→${s.score||"済"}（${hs.length+1}回目）`:""}`:"未実施"}\n`; }); });
+      t+=`・${b.title}：${s?.done?`${s.score||"済"}／${Math.round((s.sec||0)/60)}分（目安${b.min}分）${hs.length?`／これまで ${hs.join("→")}→${s.score||"済"}（${hs.length+1}回目）`:""}`:"未実施"}\n`;
+      const wl=(store.work||{})[b.id]; if(wl&&wl.length) wl.forEach(x=>{ t+=`　- ${x.label}：${Math.floor(x.sec/60)}分${String(x.sec%60).padStart(2,"0")}秒（目安${x.plan}分）${x.sec>x.plan*60?" ⚠オーバー":""}${x.part?"（途中）":""}\n`; }); }); });
   t+=`\n■教科別（1回目の正答率・1問の平均時間）\n`;
   const plan=[];
   SJ.forEach(sj=>{
@@ -878,7 +935,7 @@ function analysisText(){
     if(b) b.items.forEach(it=>{ if(store.res[it.id]&&!store.res[it.id].ok) t+=`　- ${stripTags(it.q).slice(0,50)} → ${it.a[0]}\n`; }); }));
   if(!ni) t+="（なし）\n";
   { const low=lowBlocks(); t+=`\n■正答率が低かったコマ（1回目70%未満）\n`; let nl=0;
-    Object.keys(DAYS).forEach(d=>blocksOf(d).forEach(b=>{ if(!low.has(b.id)) return; nl++; const s=store.blocks[b.id];
+    Object.keys(DAYS).filter(d=>!DAYS[d].hidden).forEach(d=>blocksOf(d).forEach(b=>{ if(!low.has(b.id)) return; nl++; const s=store.blocks[b.id];
       const w=(b.items||[]).filter(it=>store.res[it.id]&&store.res[it.id].wrong1);
       t+=`・${DAYS[d].label} ${b.title}：${s.score}（1回目✕ ${w.length}問）\n`;
       w.slice(0,12).forEach(it=>t+=`　- ${stripTags(it.q).slice(0,40)} → ${it.a[0]}${store.res[it.id].h?"（"+store.res[it.id].h+"）":""}\n`); }));
